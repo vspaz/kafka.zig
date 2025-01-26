@@ -41,3 +41,7 @@ pub const Builder = struct {
         return self._conf;
     }
 };
+
+pub fn deinit(config: ?*kafka.struct_rd_kafka_conf_s) void {
+    kafka.rd_kafka_conf_destroy(config);
+}
