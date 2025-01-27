@@ -1,9 +1,9 @@
 const std = @import("std");
-const config = @import("kafka/producer/config.zig");
+const config = @import("kafka/config.zig");
 
 pub fn main() !void {
-    var config_builder = config.Builder.get();
-    const producer_config = config_builder
+    var ConfigBuilder = config.Builder.get();
+    const producer_config = ConfigBuilder
         .withBootstrapServers("localhost:9092")
         .withLingerMs("5")
         .withBatchSize("10")
