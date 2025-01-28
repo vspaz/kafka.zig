@@ -40,11 +40,11 @@ pub const Builder = struct {
         std.log.info("config initialized", .{});
         return self._conf;
     }
-};
 
-pub fn deinit(config: ?*kafka.struct_rd_kafka_conf_s) void {
-    kafka.rd_kafka_conf_destroy(config);
-}
+    pub fn deinit(self: *Builder) void {
+        kafka.rd_kafka_conf_destroy(self._conf);
+    }
+};
 
 test "test ConfigBuilder Ok" {
     var ConfigBuilder = Builder.get();

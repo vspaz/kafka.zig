@@ -9,8 +9,10 @@ pub fn main() !void {
         .withLingerMs("5")
         .withBatchSize("10")
         .build();
-    const kafka_producer = producer.getProducer(producer_config);
-    defer producer.deinit(kafka_producer);
+    const kafka_producer_or_null = producer.Producer.init(producer_config);
+    if (kafka_producer_or_null) |kafka_producer| {
+        defer kafka_producer.deinit();
+    }
 }
 
 test {
