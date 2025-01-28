@@ -17,27 +17,27 @@ pub const Builder = struct {
 
     pub fn withBootstrapServers(self: *Builder, servers: [*c]const u8) *Builder {
         if (kafka.rd_kafka_conf_set(self._conf, "bootstrap.servers", servers, null, 0) != kafka.RD_KAFKA_CONF_OK) {
-            std.debug.print("Failed to set Kafka broker.\n", .{});
+            std.log.err("Failed to set Kafka broker.", .{});
         }
         return self;
     }
 
     pub fn withBatchSize(self: *Builder, batch_size: [*c]const u8) *Builder {
         if (kafka.rd_kafka_conf_set(self._conf, "batch.size", batch_size, null, 0) != kafka.RD_KAFKA_CONF_OK) {
-            std.debug.print("Failed to set batch size.\n", .{});
+            std.log.err("Failed to set batch size.", .{});
         }
         return self;
     }
 
     pub fn withLingerMs(self: *Builder, linger_ms: [*c]const u8) *Builder {
         if (kafka.rd_kafka_conf_set(self._conf, "linger.ms", linger_ms, null, 0) != kafka.RD_KAFKA_CONF_OK) {
-            std.debug.print("Failed to set linger.ms.\n", .{});
+            std.log.err("Failed to set linger.ms.", .{});
         }
         return self;
     }
 
     pub fn build(self: *Builder) ?*kafka.rd_kafka_conf_t {
-        std.debug.print("config initialized\n", .{});
+        std.log.info("config initialized", .{});
         return self._conf;
     }
 };
@@ -54,5 +54,6 @@ test "test ConfigBuilder Ok" {
         .withBatchSize("10")
         .build();
 
-    defer deinit(producer_config);
+    assert(producer_config != null);
+    assert(@TypeOf(producer_config) == ?*kafka.struct_rd_kafka_conf_s);
 }
