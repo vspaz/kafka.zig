@@ -45,3 +45,14 @@ pub const Builder = struct {
 pub fn deinit(config: ?*kafka.struct_rd_kafka_conf_s) void {
     kafka.rd_kafka_conf_destroy(config);
 }
+
+test "test ConfigBuilder Ok" {
+    var ConfigBuilder = Builder.get();
+    const producer_config = ConfigBuilder
+        .withBootstrapServers("localhost:9092")
+        .withLingerMs("5")
+        .withBatchSize("10")
+        .build();
+
+    defer deinit(producer_config);
+}
