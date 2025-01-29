@@ -9,10 +9,11 @@ pub fn main() !void {
         .withLingerMs("5")
         .withBatchSize("10")
         .build();
-    const kafka_producer_or_null = producer.Producer.init(producer_config, "foobar-topic");
-    if (kafka_producer_or_null) |kafka_producer| {
-        defer kafka_producer.deinit();
-    }
+
+    const kafka_producer = producer.Producer.init(producer_config, "topic-name");
+    defer kafka_producer.deinit();
+    kafka_producer.send("some payload", "key");
+    kafka_producer.wait();
 }
 
 test {

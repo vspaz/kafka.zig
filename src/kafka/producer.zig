@@ -9,28 +9,58 @@ pub const Producer = struct {
     _producer: ?*librdkafka.rd_kafka_t,
     _topic: ?*librdkafka.rd_kafka_topic_t = undefined,
 
-    pub fn init(conf: ?*librdkafka.struct_rd_kafka_conf_s, topic: [*]const u8) ?Producer {
+    pub fn init(conf: ?*librdkafka.struct_rd_kafka_conf_s, topic: [*]const u8) Producer {
         const kafka_producer: ?*librdkafka.rd_kafka_t = librdkafka.rd_kafka_new(librdkafka.RD_KAFKA_PRODUCER, conf, null, 0);
         if (kafka_producer == null) {
-            std.log.err("Failed to create Kafka producer", .{});
-            return null;
+            @panic("Failed to create Kafka producer");
+            //return null;
         }
-        std.log.info("kafka producer initialized", .{});
 
         const topic_conf = librdkafka.rd_kafka_topic_conf_new();
         if (topic_conf == null) {
-            std.log.err("Failed to create topic configuration", .{});
-            return null;
+            @panic("Failed to create topic configuration");
+            //return null;
         }
+
         const kafka_topic = librdkafka.rd_kafka_topic_new(kafka_producer, topic, topic_conf);
         if (kafka_topic == null) {
-            std.log.err("Failed to create Kafka topic", .{});
-            return null;
+            @panic("Failed to create Kafka topic");
+            //return null;
         }
+        std.log.info("kafka producer initialized", .{});
         return .{ ._producer = kafka_producer, ._topic = kafka_topic };
     }
+
     pub fn deinit(self: Producer) void {
         librdkafka.rd_kafka_destroy(self._producer);
+        std.log.info("kafka producer deinitialized", .{});
+    }
+
+    pub fn send(self: Producer, message: []const u8, key: []const u8) void {
+        const message_ptr: ?*anyopaque = @constCast(message.ptr);
+        const key_ptr: ?*anyopaque = @constCast(key.ptr);
+        const err = librdkafka.rd_kafka_produce(
+            self._topic,
+            librdkafka.RD_KAFKA_PARTITION_UA,
+            librdkafka.RD_KAFKA_MSG_F_COPY,
+            message_ptr,
+            message.len,
+            key_ptr,
+            key.len,
+            null,
+        );
+
+        if (err != 0) {
+            std.log.err("Failed to send message: {s}", .{librdkafka.rd_kafka_err2str(librdkafka.rd_kafka_last_error())});
+        } else {
+            std.log.info("Message sent successfully!", .{});
+        }
+    }
+
+    pub fn wait(self: Producer) void {
+        while (librdkafka.rd_kafka_outq_len(self._producer) > 0) {
+            _ = librdkafka.rd_kafka_poll(self._producer, 100);
+        }
     }
 };
 
@@ -42,10 +72,7 @@ test "test get Producer Ok" {
         .withBatchSize("10")
         .build();
 
-    const kafka_producer_or_null = Producer.init(producer_config, "foobar-topic");
-    assert(kafka_producer_or_null != null);
-    if (kafka_producer_or_null) |kafka_producer| {
-        assert(@TypeOf(kafka_producer) == Producer);
-        kafka_producer.deinit();
-    }
+    const kafka_producer = Producer.init(producer_config, "foobar-topic");
+    assert(@TypeOf(kafka_producer) == Producer);
+    kafka_producer.deinit();
 }
