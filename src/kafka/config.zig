@@ -4,56 +4,67 @@ const librdkafka = @cImport({
 const std = @import("std");
 const assert = std.debug.assert;
 
+pub const Config = struct {
+    producer: ?*librdkafka.struct_rd_kafka_conf_s,
+    topic: ?*librdkafka.struct_rd_kafka_topic_conf_s,
+};
+
 pub const Builder = struct {
-    _conf: ?*librdkafka.struct_rd_kafka_conf_s,
+    _producer_conf: ?*librdkafka.struct_rd_kafka_conf_s,
+    _topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s,
 
     pub fn get() Builder {
-        const conf = librdkafka.rd_kafka_conf_new();
-        if (conf == null) {
-            std.debug.print("failed to create config", .{});
+        const producer_conf: ?*librdkafka.struct_rd_kafka_conf_s = librdkafka.rd_kafka_conf_new();
+        if (producer_conf == null) {
+            @panic("failed to create config");
         }
-        return .{ ._conf = conf };
+
+        const topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s = librdkafka.rd_kafka_topic_conf_new();
+        if (topic_conf == null) {
+            @panic("Failed to create topic configuration");
+        }
+
+        return .{ ._producer_conf = producer_conf, ._topic_conf = topic_conf };
     }
 
     pub fn withBootstrapServers(self: *Builder, servers: [*c]const u8) *Builder {
-        if (librdkafka.rd_kafka_conf_set(self._conf, "bootstrap.servers", servers, null, 0) != librdkafka.RD_KAFKA_CONF_OK) {
-            std.log.err("Failed to set Kafka broker.", .{});
+        if (librdkafka.rd_kafka_conf_set(self._producer_conf, "bootstrap.servers", servers, null, 0) != librdkafka.RD_KAFKA_CONF_OK) {
+            @panic("Failed to set Kafka broker.");
         }
         return self;
     }
 
     pub fn withBatchSize(self: *Builder, batch_size: [*c]const u8) *Builder {
-        if (librdkafka.rd_kafka_conf_set(self._conf, "batch.size", batch_size, null, 0) != librdkafka.RD_KAFKA_CONF_OK) {
-            std.log.err("Failed to set batch size.", .{});
+        if (librdkafka.rd_kafka_conf_set(self._producer_conf, "batch.size", batch_size, null, 0) != librdkafka.RD_KAFKA_CONF_OK) {
+            @panic("Failed to set batch size.");
         }
         return self;
     }
 
     pub fn withLingerMs(self: *Builder, linger_ms: [*c]const u8) *Builder {
-        if (librdkafka.rd_kafka_conf_set(self._conf, "linger.ms", linger_ms, null, 0) != librdkafka.RD_KAFKA_CONF_OK) {
+        if (librdkafka.rd_kafka_conf_set(self._producer_conf, "linger.ms", linger_ms, null, 0) != librdkafka.RD_KAFKA_CONF_OK) {
             std.log.err("Failed to set linger.ms.", .{});
         }
         return self;
     }
 
-    pub fn build(self: *Builder) ?*librdkafka.rd_kafka_conf_t {
+    pub fn build(self: *Builder) Config {
         std.log.info("config initialized", .{});
-        return self._conf;
+        return .{ .producer = self._producer_conf, .topic = self._topic_conf };
     }
 
     pub fn deinit(self: *Builder) void {
-        librdkafka.rd_kafka_conf_destroy(self._conf);
+        librdkafka.rd_kafka_conf_destroy(self._producer_conf);
     }
 };
 
 test "test ConfigBuilder Ok" {
     var ConfigBuilder = Builder.get();
-    const producer_config = ConfigBuilder
+    const conf = ConfigBuilder
         .withBootstrapServers("localhost:9092")
         .withLingerMs("5")
         .withBatchSize("10")
         .build();
 
-    assert(producer_config != null);
-    assert(@TypeOf(producer_config) == ?*librdkafka.struct_rd_kafka_conf_s);
+    assert(@TypeOf(conf) == Config);
 }

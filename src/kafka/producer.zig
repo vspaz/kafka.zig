@@ -7,22 +7,15 @@ const assert = std.debug.assert;
 
 pub const Producer = struct {
     _producer: ?*librdkafka.rd_kafka_t,
-    _topic: ?*librdkafka.rd_kafka_topic_t = undefined,
+    _topic: ?*librdkafka.struct_rd_kafka_topic_s,
 
-    pub fn init(conf: ?*librdkafka.struct_rd_kafka_conf_s, topic: [*]const u8) Producer {
-        const kafka_producer: ?*librdkafka.rd_kafka_t = librdkafka.rd_kafka_new(librdkafka.RD_KAFKA_PRODUCER, conf, null, 0);
+    pub fn init(conf: config.Config, topic: [*]const u8) Producer {
+        const kafka_producer: ?*librdkafka.rd_kafka_t = librdkafka.rd_kafka_new(librdkafka.RD_KAFKA_PRODUCER, conf.producer, null, 0);
         if (kafka_producer == null) {
             @panic("Failed to create Kafka producer");
-            //return null;
         }
 
-        const topic_conf = librdkafka.rd_kafka_topic_conf_new();
-        if (topic_conf == null) {
-            @panic("Failed to create topic configuration");
-            //return null;
-        }
-
-        const kafka_topic = librdkafka.rd_kafka_topic_new(kafka_producer, topic, topic_conf);
+        const kafka_topic: ?*librdkafka.struct_rd_kafka_topic_s = librdkafka.rd_kafka_topic_new(kafka_producer, topic, conf.topic);
         if (kafka_topic == null) {
             @panic("Failed to create Kafka topic");
             //return null;
@@ -57,22 +50,22 @@ pub const Producer = struct {
         }
     }
 
-    pub fn wait(self: Producer) void {
+    pub fn wait(self: Producer, interval: u16) void {
         while (librdkafka.rd_kafka_outq_len(self._producer) > 0) {
-            _ = librdkafka.rd_kafka_poll(self._producer, 100);
+            _ = librdkafka.rd_kafka_poll(self._producer, interval);
         }
     }
 };
 
 test "test get Producer Ok" {
     var ConfigBuilder = config.Builder.get();
-    const producer_config = ConfigBuilder
+    const conf = ConfigBuilder
         .withBootstrapServers("localhost:9092")
         .withLingerMs("5")
         .withBatchSize("10")
         .build();
 
-    const kafka_producer = Producer.init(producer_config, "foobar-topic");
+    const kafka_producer = Producer.init(conf, "foobar-topic");
     assert(@TypeOf(kafka_producer) == Producer);
     kafka_producer.deinit();
 }
