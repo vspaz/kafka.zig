@@ -3,24 +3,27 @@ const librdkafka = @cImport({
 });
 const std = @import("std");
 const config = @import("config.zig");
+const topic = @import("topic.zig");
 const assert = std.debug.assert;
 
 pub const Producer = struct {
     _producer: ?*librdkafka.rd_kafka_t,
     _topic: ?*librdkafka.struct_rd_kafka_topic_s,
 
-    pub fn init(conf: config.Config, topic: [*]const u8) Producer {
-        const kafka_producer: ?*librdkafka.rd_kafka_t = librdkafka.rd_kafka_new(librdkafka.RD_KAFKA_PRODUCER, conf.producer, null, 0);
+    fn createKafkaProducer(conf: ?*librdkafka.struct_rd_kafka_conf_s) ?*librdkafka.rd_kafka_t {
+        var error_message: [512]u8 = undefined;
+        const kafka_producer: ?*librdkafka.rd_kafka_t = librdkafka.rd_kafka_new(librdkafka.RD_KAFKA_PRODUCER, conf, &error_message, error_message.len);
         if (kafka_producer == null) {
-            @panic("Failed to create Kafka producer");
-        }
-
-        const kafka_topic: ?*librdkafka.struct_rd_kafka_topic_s = librdkafka.rd_kafka_topic_new(kafka_producer, topic, conf.topic);
-        if (kafka_topic == null) {
-            @panic("Failed to create Kafka topic");
-            //return null;
+            @panic(&error_message);
         }
         std.log.info("kafka producer initialized", .{});
+        return kafka_producer;
+    }
+
+    pub fn init(conf: ?*librdkafka.struct_rd_kafka_conf_s, topic_name: [*]const u8) Producer {
+        const kafka_producer = createKafkaProducer(conf);
+        const topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s = topic.getTopicConfig();
+        const kafka_topic: ?*librdkafka.struct_rd_kafka_topic_s = topic.createTopic(kafka_producer, topic_conf, topic_name);
         return .{ ._producer = kafka_producer, ._topic = kafka_topic };
     }
 

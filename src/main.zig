@@ -7,11 +7,14 @@ pub fn main() !void {
     const conf = ConfigBuilder
         .withBootstrapServers("localhost:9092")
         .withLingerMs("5")
-        .withBatchSize("10")
+        .withBatchSize("1024")
+        .withBatchNumMessages("10")
+        .withCompressionCodec("snappy")
         .build();
 
     const kafka_producer = producer.Producer.init(conf, "topic-name");
     defer kafka_producer.deinit();
+
     kafka_producer.send("some payload", "key");
     kafka_producer.wait(100);
 }
