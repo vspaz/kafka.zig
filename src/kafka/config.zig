@@ -4,6 +4,7 @@ const librdkafka = @cImport({
 const std = @import("std");
 const assert = std.debug.assert;
 
+// https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#global-configuration-properties
 pub const Config = struct {
     producer: ?*librdkafka.struct_rd_kafka_conf_s,
 };
@@ -12,12 +13,15 @@ pub const Builder = struct {
     _producer_conf: ?*librdkafka.struct_rd_kafka_conf_s,
 
     pub fn get() Builder {
+        return .{ ._producer_conf = getProducerConfig() };
+    }
+
+    fn getProducerConfig() ?*librdkafka.struct_rd_kafka_conf_s {
         const producer_conf: ?*librdkafka.struct_rd_kafka_conf_s = librdkafka.rd_kafka_conf_new();
         if (producer_conf == null) {
             @panic("failed to create config");
         }
-
-        return .{ ._producer_conf = producer_conf };
+        return producer_conf;
     }
 
     fn setConfigParameter(self: *Builder, param: [*c]const u8, value: [*c]const u8) void {

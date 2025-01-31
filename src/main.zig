@@ -1,10 +1,11 @@
 const std = @import("std");
 const config = @import("kafka/config.zig");
 const producer = @import("kafka/producer.zig");
+const topic = @import("kafka/topic.zig");
 
 pub fn main() !void {
-    var ConfigBuilder = config.Builder.get();
-    const conf = ConfigBuilder
+    var producer_config_builder = config.Builder.get();
+    const producer_conf = producer_config_builder // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#global-configuration-properties
         .with("bootstrap.servers", "localhost:9092")
         .with("batch.num.messages", "10")
         .with("linger.ms", "100")
@@ -12,7 +13,12 @@ pub fn main() !void {
         .with("batch.size", "16384")
         .build();
 
-    const kafka_producer = producer.Producer.init(conf, "topic-name");
+    var topic_config_builder = topic.Builder.get();
+    const topic_conf = topic_config_builder // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#topic-configuration-properties
+        .with("request.required.acks", "all")
+        .build();
+
+    const kafka_producer = producer.Producer.init(producer_conf, topic_conf, "topic-name");
     defer kafka_producer.deinit();
 
     kafka_producer.send("some payload", "key");

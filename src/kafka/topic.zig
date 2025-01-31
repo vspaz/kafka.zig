@@ -2,7 +2,9 @@ const librdkafka = @cImport({
     @cInclude("librdkafka/rdkafka.h");
 });
 const std = @import("std");
+const assert = std.debug.assert;
 
+// https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#topic-configuration-properties
 pub fn getTopicConfig() ?*librdkafka.struct_rd_kafka_topic_conf_s {
     const topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s = librdkafka.rd_kafka_topic_conf_new();
     if (topic_conf == null) {
@@ -19,22 +21,22 @@ pub fn createTopic(producer: ?*librdkafka.rd_kafka_t, topic_conf: ?*librdkafka.s
     return kafka_topic;
 }
 
-const Builder = struct {
+pub const Builder = struct {
     _topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s,
 
-    pub fn init() Builder {
+    pub fn get() Builder {
         return .{ ._topic_conf = getTopicConfig() };
     }
 
-    fn setTopicConfigParam(self: *Builder, topic_param: [*c]const u8, topic_value: [*c]const u8) *Builder {
+    fn setTopicConfigParam(self: *Builder, topic_param: [*c]const u8, topic_value: [*c]const u8) void {
         var error_message: [512]u8 = undefined;
         if (librdkafka.rd_kafka_topic_conf_set(self._topic_conf, topic_param, topic_value, &error_message, error_message.len) != librdkafka.RD_KAFKA_CONF_OK) {
             @panic(&error_message);
         }
     }
 
-    pub fn withBootstrapServers(self: *Builder, request_required_acks: [*c]const u8) *Builder {
-        setTopicConfigParam(self, "request.required.acks", request_required_acks);
+    pub fn with(self: *Builder, param: [*c]const u8, value: [*c]const u8) *Builder {
+        setTopicConfigParam(self, param, value);
         return self;
     }
 
@@ -42,3 +44,12 @@ const Builder = struct {
         return self._topic_conf;
     }
 };
+
+test "test get topic Builder Ok" {
+    var TopicConfigBuilder = Builder.get();
+    const topic_conf = TopicConfigBuilder
+        .with("request.required.acks", "all")
+        .build();
+
+    assert(@TypeOf(topic_conf) == ?*librdkafka.struct_rd_kafka_topic_conf_s);
+}
