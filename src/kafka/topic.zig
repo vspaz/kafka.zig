@@ -2,16 +2,6 @@ const librdkafka = @cImport({
     @cInclude("librdkafka/rdkafka.h");
 });
 const std = @import("std");
-const assert = std.debug.assert;
-
-// https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#topic-configuration-properties
-pub fn getTopicConfig() ?*librdkafka.struct_rd_kafka_topic_conf_s {
-    const topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s = librdkafka.rd_kafka_topic_conf_new();
-    if (topic_conf == null) {
-        @panic("Failed to create topic configuration");
-    }
-    return topic_conf;
-}
 
 pub fn createTopic(producer: ?*librdkafka.rd_kafka_t, topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s, topic_name: [*]const u8) ?*librdkafka.struct_rd_kafka_topic_s {
     const kafka_topic: ?*librdkafka.struct_rd_kafka_topic_s = librdkafka.rd_kafka_topic_new(producer, topic_name, topic_conf);
@@ -21,11 +11,20 @@ pub fn createTopic(producer: ?*librdkafka.rd_kafka_t, topic_conf: ?*librdkafka.s
     return kafka_topic;
 }
 
+// https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#topic-configuration-properties
 pub const Builder = struct {
     _topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s,
 
     pub fn get() Builder {
-        return .{ ._topic_conf = getTopicConfig() };
+        return .{ ._topic_conf = getTopicConf() };
+    }
+
+    pub fn getTopicConf() ?*librdkafka.struct_rd_kafka_topic_conf_s {
+        const topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s = librdkafka.rd_kafka_topic_conf_new();
+        if (topic_conf == null) {
+            @panic("Failed to create topic configuration");
+        }
+        return topic_conf;
     }
 
     fn setTopicConfigParam(self: *Builder, topic_param: [*c]const u8, topic_value: [*c]const u8) void {
@@ -51,5 +50,5 @@ test "test get topic Builder Ok" {
         .with("request.required.acks", "all")
         .build();
 
-    assert(@TypeOf(topic_conf) == ?*librdkafka.struct_rd_kafka_topic_conf_s);
+    std.debug.assert(@TypeOf(topic_conf) == ?*librdkafka.struct_rd_kafka_topic_conf_s);
 }

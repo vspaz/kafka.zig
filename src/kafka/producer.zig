@@ -4,7 +4,6 @@ const librdkafka = @cImport({
 const std = @import("std");
 const config = @import("config.zig");
 const topic = @import("topic.zig");
-const assert = std.debug.assert;
 
 pub const Producer = struct {
     _producer: ?*librdkafka.rd_kafka_t,
@@ -75,6 +74,6 @@ test "test get Producer Ok" {
         .build();
 
     const kafka_producer = Producer.init(conf, topic_conf, "foobar-topic");
-    assert(@TypeOf(kafka_producer) == Producer);
+    std.debug.assert(@TypeOf(kafka_producer) == Producer);
     kafka_producer.deinit();
 }

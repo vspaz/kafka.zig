@@ -2,21 +2,16 @@ const librdkafka = @cImport({
     @cInclude("librdkafka/rdkafka.h");
 });
 const std = @import("std");
-const assert = std.debug.assert;
 
 // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#global-configuration-properties
-pub const Config = struct {
-    producer: ?*librdkafka.struct_rd_kafka_conf_s,
-};
-
 pub const Builder = struct {
     _producer_conf: ?*librdkafka.struct_rd_kafka_conf_s,
 
     pub fn get() Builder {
-        return .{ ._producer_conf = getProducerConfig() };
+        return .{ ._producer_conf = getProducerConf() };
     }
 
-    fn getProducerConfig() ?*librdkafka.struct_rd_kafka_conf_s {
+    fn getProducerConf() ?*librdkafka.struct_rd_kafka_conf_s {
         const producer_conf: ?*librdkafka.struct_rd_kafka_conf_s = librdkafka.rd_kafka_conf_new();
         if (producer_conf == null) {
             @panic("failed to create config");
@@ -52,5 +47,5 @@ test "test ConfigBuilder Ok" {
         .with("batch.size", "16384")
         .build();
 
-    assert(@TypeOf(conf) == ?*librdkafka.struct_rd_kafka_conf_s);
+    std.debug.assert(@TypeOf(conf) == ?*librdkafka.struct_rd_kafka_conf_s);
 }
