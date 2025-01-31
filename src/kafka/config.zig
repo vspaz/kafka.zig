@@ -20,35 +20,15 @@ pub const Builder = struct {
         return .{ ._producer_conf = producer_conf };
     }
 
-    fn setConfigParameter(self: *Builder, config_param: [*c]const u8, config_value: [*c]const u8) void {
+    fn setConfigParameter(self: *Builder, param: [*c]const u8, value: [*c]const u8) void {
         var error_message: [512]u8 = undefined;
-        if (librdkafka.rd_kafka_conf_set(self._producer_conf, config_param, config_value, &error_message, error_message.len) != librdkafka.RD_KAFKA_CONF_OK) {
+        if (librdkafka.rd_kafka_conf_set(self._producer_conf, param, value, &error_message, error_message.len) != librdkafka.RD_KAFKA_CONF_OK) {
             @panic(&error_message);
         }
     }
 
-    pub fn withBootstrapServers(self: *Builder, servers: [*c]const u8) *Builder {
-        setConfigParameter(self, "bootstrap.servers", servers);
-        return self;
-    }
-
-    pub fn withBatchSize(self: *Builder, batch_size: [*c]const u8) *Builder {
-        setConfigParameter(self, "batch.size", batch_size);
-        return self;
-    }
-
-    pub fn withBatchNumMessages(self: *Builder, batch_num_messages: [*c]const u8) *Builder {
-        setConfigParameter(self, "batch.num.messages", batch_num_messages);
-        return self;
-    }
-
-    pub fn withLingerMs(self: *Builder, linger_ms: [*c]const u8) *Builder {
-        setConfigParameter(self, "linger.ms", linger_ms);
-        return self;
-    }
-
-    pub fn withCompressionCodec(self: *Builder, codec: [*c]const u8) *Builder {
-        setConfigParameter(self, "compression.codec", codec);
+    pub fn with(self: *Builder, param: [*c]const u8, value: [*c]const u8) *Builder {
+        setConfigParameter(self, param, value);
         return self;
     }
 
@@ -61,9 +41,11 @@ pub const Builder = struct {
 test "test ConfigBuilder Ok" {
     var ConfigBuilder = Builder.get();
     const conf = ConfigBuilder
-        .withBootstrapServers("localhost:9092")
-        .withLingerMs("5")
-        .withBatchSize("16384")
+        .with("bootstrap.servers", "localhost:9092")
+        .with("batch.num.messages", "100")
+        .with("linger.ms", "100")
+        .with("compression.codec", "snappy")
+        .with("batch.size", "16384")
         .build();
 
     assert(@TypeOf(conf) == ?*librdkafka.struct_rd_kafka_conf_s);

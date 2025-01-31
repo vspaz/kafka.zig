@@ -63,9 +63,11 @@ pub const Producer = struct {
 test "test get Producer Ok" {
     var ConfigBuilder = config.Builder.get();
     const conf = ConfigBuilder
-        .withBootstrapServers("localhost:9092")
-        .withLingerMs("5")
-        .withBatchSize("10")
+        .with("bootstrap.servers", "localhost:9092")
+        .with("batch.num.messages", "100")
+        .with("linger.ms", "100")
+        .with("compression.codec", "snappy")
+        .with("batch.size", "16384")
         .build();
 
     const kafka_producer = Producer.init(conf, "foobar-topic");
