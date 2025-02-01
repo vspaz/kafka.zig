@@ -4,14 +4,15 @@ const librdkafka = @cImport({
 const std = @import("std");
 const config = @import("config.zig");
 const topic = @import("topic.zig");
+const utils = @import("utils.zig");
 
 pub const Producer = struct {
     _producer: ?*librdkafka.rd_kafka_t,
     _topic: ?*librdkafka.struct_rd_kafka_topic_s,
 
-    fn createKafkaProducer(producer_conf: ?*librdkafka.struct_rd_kafka_conf_s) ?*librdkafka.rd_kafka_t {
+    fn createKafkaProducer(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s) ?*librdkafka.rd_kafka_t {
         var error_message: [512]u8 = undefined;
-        const kafka_producer: ?*librdkafka.rd_kafka_t = librdkafka.rd_kafka_new(librdkafka.RD_KAFKA_PRODUCER, producer_conf, &error_message, error_message.len);
+        const kafka_producer: ?*librdkafka.rd_kafka_t = librdkafka.rd_kafka_new(librdkafka.RD_KAFKA_PRODUCER, kafka_conf, &error_message, error_message.len);
         if (kafka_producer == null) {
             @panic(&error_message);
         }
@@ -19,8 +20,8 @@ pub const Producer = struct {
         return kafka_producer;
     }
 
-    pub fn init(producer_conf: ?*librdkafka.struct_rd_kafka_conf_s, topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s, topic_name: [*]const u8) Producer {
-        const kafka_producer = createKafkaProducer(producer_conf);
+    pub fn init(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s, topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s, topic_name: [*]const u8) Producer {
+        const kafka_producer = createKafkaProducer(kafka_conf);
         const kafka_topic: ?*librdkafka.struct_rd_kafka_topic_s = topic.createTopic(kafka_producer, topic_conf, topic_name);
         return .{ ._producer = kafka_producer, ._topic = kafka_topic };
     }
@@ -46,7 +47,7 @@ pub const Producer = struct {
         );
 
         if (err != 0) {
-            std.log.err("Failed to send message: {s}", .{librdkafka.rd_kafka_err2str(librdkafka.rd_kafka_last_error())});
+            std.log.err("Failed to send message: {s}", .{utils.getLastError()});
         } else {
             std.log.info("Message sent successfully!", .{});
         }

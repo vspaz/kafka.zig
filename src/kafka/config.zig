@@ -5,10 +5,10 @@ const std = @import("std");
 
 // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#global-configuration-properties
 pub const Builder = struct {
-    _producer_conf: ?*librdkafka.struct_rd_kafka_conf_s,
+    _kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s,
 
     pub fn get() Builder {
-        return .{ ._producer_conf = getProducerConf() };
+        return .{ ._kafka_conf = getProducerConf() };
     }
 
     fn getProducerConf() ?*librdkafka.struct_rd_kafka_conf_s {
@@ -21,7 +21,7 @@ pub const Builder = struct {
 
     fn setConfigParameter(self: *Builder, param: [*c]const u8, value: [*c]const u8) void {
         var error_message: [512]u8 = undefined;
-        if (librdkafka.rd_kafka_conf_set(self._producer_conf, param, value, &error_message, error_message.len) != librdkafka.RD_KAFKA_CONF_OK) {
+        if (librdkafka.rd_kafka_conf_set(self._kafka_conf, param, value, &error_message, error_message.len) != librdkafka.RD_KAFKA_CONF_OK) {
             @panic(&error_message);
         }
     }
@@ -33,7 +33,7 @@ pub const Builder = struct {
 
     pub fn build(self: *Builder) ?*librdkafka.struct_rd_kafka_conf_s {
         std.log.info("config initialized", .{});
-        return self._producer_conf;
+        return self._kafka_conf;
     }
 };
 

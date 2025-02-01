@@ -52,16 +52,24 @@ fn jsonProducer() !void {
 
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
+    defer _ = gpa.deinit();
 
-    const message = .{ .key1 = 100, .key2 = "kafka" };
-    const encoded_message = try std.json.stringifyAlloc(allocator, message, .{});
-    defer allocator.free(encoded_message);
+    for (0..100) |_| {
+        const message = .{ .key1 = 100, .key2 = "kafka" };
+        const encoded_message = try std.json.stringifyAlloc(allocator, message, .{});
+        defer allocator.free(encoded_message);
 
-    kafka_producer.send(encoded_message, "key");
-    kafka_producer.wait(100);
+        kafka_producer.send(encoded_message, "key");
+        kafka_producer.wait(100);
+        std.time.sleep(1_000_000_000);
+    }
 }
 
 fn jsonConsumer() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer _ = gpa.deinit();
+
     var consumer_config_builder = config.Builder.get();
     const consumer_conf = consumer_config_builder
         .with("bootstrap.servers", "localhost:9092")
@@ -70,31 +78,32 @@ fn jsonConsumer() !void {
         .with("auto.commit.interval.ms", "5000")
         .build();
     var kafka_consumer = consumer.Consumer.init(consumer_conf);
+    defer kafka_consumer.deinit();
+
     const topics = [_][]const u8{"topic-name2"};
     kafka_consumer.subscribe(&topics);
-
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
 
     while (true) {
         const msg = kafka_consumer.poll(1000);
         if (msg) |message| {
-            const decoded_payload: []const u8 = consumer.decodePayload(message);
-            std.log.info("Received message: {s}", .{decoded_payload});
-            const parsed_payload = try std.json.parseFromSlice(Data, allocator, decoded_payload, .{});
+            const payload: []const u8 = @as([*]u8, @ptrCast(message.payload))[0..message.len];
+            std.log.info("Received message: {s}", .{payload});
+            const parsed_payload = try std.json.parseFromSlice(Data, allocator, payload, .{});
+            defer parsed_payload.deinit();
             std.log.info("parsed value: {s}", .{parsed_payload.value.key2});
-            kafka_consumer.commitOffset(message);
+            kafka_consumer.commitOffsetOnEvery(10, message); // or kafka_consumer.commitOffset(message) to commit on every message.
         }
-        kafka_consumer.unsubscribe();
-        kafka_consumer.close();
-        kafka_consumer.deinit();
     }
+    kafka_consumer.unsubscribe();
+    kafka_consumer.close();
 }
 
 pub fn main() !void {
     // plainTextProducer();
-    try jsonProducer();
-    try jsonConsumer();
+    const producer_worker = try std.Thread.spawn(.{}, jsonProducer, .{});
+    const consumer_worker = try std.Thread.spawn(.{}, jsonConsumer, .{});
+    producer_worker.join();
+    consumer_worker.join();
 }
 
 test {
