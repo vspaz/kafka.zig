@@ -26,6 +26,7 @@ pub const Producer = struct {
     }
 
     pub fn deinit(self: Producer) void {
+        librdkafka.rd_kafka_topic_destroy(self._topic);
         librdkafka.rd_kafka_destroy(self._producer);
         std.log.info("kafka producer deinitialized", .{});
     }
@@ -51,6 +52,7 @@ pub const Producer = struct {
         }
     }
 
+    // Wait for all messages to be sent.
     pub fn wait(self: Producer, interval: u16) void {
         while (librdkafka.rd_kafka_outq_len(self._producer) > 0) {
             _ = librdkafka.rd_kafka_poll(self._producer, interval);
