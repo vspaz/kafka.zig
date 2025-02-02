@@ -1,8 +1,8 @@
 const std = @import("std");
-const config = @import("kafka/config.zig");
-const producer = @import("kafka/producer.zig");
-const consumer = @import("kafka/consumer.zig");
-const topic = @import("kafka/topic.zig");
+const config = @import("config.zig");
+const producer = @import("producer.zig");
+const consumer = @import("consumer.zig");
+const topic = @import("topic.zig");
 
 fn plainTextProducer() void {
     var producer_config_builder = config.Builder.get();
