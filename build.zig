@@ -25,7 +25,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .link_libc = true,
     });
-    exe.root_module.addImport("kafkazig", kafkazig);
+    exe.root_module.addImport("kafka", kafkazig);
     exe.linkSystemLibrary("rdkafka");
 
     // This declares intent for the executable to be installed into the
