@@ -1,27 +1,30 @@
+// examples for documentation - file to be delted!
 const std = @import("std");
-const config = @import("config.zig");
-const producer = @import("producer.zig");
-const consumer = @import("consumer.zig");
-const topic = @import("topic.zig");
+const kafka = @import("kafka.zig");
 
 fn plainTextProducer() void {
-    var producer_config_builder = config.Builder.get();
+    var producer_config_builder = kafka.config.Builder.get();
     // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#global-configuration-properties
     const producer_conf = producer_config_builder
         .with("bootstrap.servers", "localhost:9092")
+        .with("enable.idempotence", "true")
         .with("batch.num.messages", "10")
+        .with("reconnect.backoff.msreconnect.backoff.ms", "1000")
+        .with("reconnect.backoff.max.ms", "5000")
+        .with("transaction.timeout.ms", "10000")
         .with("linger.ms", "100")
+        .with("delivery.timeout.ms", "1800000")
         .with("compression.codec", "snappy")
         .with("batch.size", "16384")
         .build();
 
-    var topic_config_builder = topic.Builder.get();
+    var topic_config_builder = kafka.topic.Builder.get();
     // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#topic-configuration-properties
     const topic_conf = topic_config_builder
         .with("acks", "all")
         .build();
 
-    const kafka_producer = producer.Producer.init(producer_conf, topic_conf, "topic-name1");
+    const kafka_producer = kafka.producer.Producer.init(producer_conf, topic_conf, "topic-name1");
     defer kafka_producer.deinit();
 
     kafka_producer.send("some payload", "key");
@@ -31,7 +34,7 @@ fn plainTextProducer() void {
 const Data = struct { key1: u32, key2: []u8 };
 
 fn jsonProducer() !void {
-    var producer_config_builder = config.Builder.get();
+    var producer_config_builder = kafka.config.Builder.get();
     // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#global-configuration-properties
     const producer_conf = producer_config_builder
         .with("bootstrap.servers", "localhost:9092")
@@ -41,13 +44,13 @@ fn jsonProducer() !void {
         .with("batch.size", "16384")
         .build();
 
-    var topic_config_builder = topic.Builder.get();
+    var topic_config_builder = kafka.topic.Builder.get();
     // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#topic-configuration-properties
     const topic_conf = topic_config_builder
         .with("acks", "all")
         .build();
 
-    const kafka_producer = producer.Producer.init(producer_conf, topic_conf, "topic-name2");
+    const kafka_producer = kafka.producer.Producer.init(producer_conf, topic_conf, "topic-name2");
     defer kafka_producer.deinit();
 
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -70,14 +73,17 @@ fn jsonConsumer() !void {
     const allocator = gpa.allocator();
     defer _ = gpa.deinit();
 
-    var consumer_config_builder = config.Builder.get();
+    var consumer_config_builder = kafka.config.Builder.get();
     const consumer_conf = consumer_config_builder
         .with("bootstrap.servers", "localhost:9092")
         .with("group.id", "consumer1")
-        .with("auto.offset.reset", "earliest")
-        .with("auto.commit.interval.ms", "5000")
+        .with("auto.offset.reset", "latest")
+        .with("enable.auto.commit", "false")
+        .with("isolation.level", "read_committed")
+        .with("reconnect.backoff.max.ms", "1000")
+        .with("reconnect.backoff.max.ms", "5000")
         .build();
-    var kafka_consumer = consumer.Consumer.init(consumer_conf);
+    var kafka_consumer = kafka.consumer.Consumer.init(consumer_conf);
     defer kafka_consumer.deinit();
 
     const topics = [_][]const u8{"topic-name2"};
@@ -104,8 +110,4 @@ pub fn main() !void {
     const consumer_worker = try std.Thread.spawn(.{}, jsonConsumer, .{});
     producer_worker.join();
     consumer_worker.join();
-}
-
-test {
-    std.testing.refAllDecls(@This());
 }

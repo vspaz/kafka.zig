@@ -153,7 +153,6 @@ fn jsonProducer() !void {
 
         kafka_producer.send(encoded_message, "key");
         kafka_producer.wait(100);
-        std.time.sleep(1_000_000_000);
     }
 }
 
