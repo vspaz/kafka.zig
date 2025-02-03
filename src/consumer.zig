@@ -3,7 +3,7 @@ const librdkafka = @cImport({
     @cInclude("librdkafka/rdkafka.h");
 });
 const utils = @import("utils.zig");
-const config = @import("config.zig");
+const kafka = @import("kafka.zig");
 
 pub const Consumer = struct {
     const Self = @This();
@@ -20,18 +20,18 @@ pub const Consumer = struct {
         return kafka_consumer;
     }
 
-    pub fn init(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s) Consumer {
-        return .{ ._consumer = createKafkaConsumer(kafka_conf) };
+    pub fn init(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s) Self {
+        return Self{ ._consumer = createKafkaConsumer(kafka_conf) };
     }
 
-    pub fn deinit(self: Consumer) void {
+    pub fn deinit(self: Self) void {
         self.unsubscribe();
         self.close();
         librdkafka.rd_kafka_destroy(self._consumer);
         std.log.info("kafka consumer deinitialized", .{});
     }
 
-    pub fn subscribe(self: Consumer, topic_names: []const []const u8) void {
+    pub fn subscribe(self: Self, topic_names: []const []const u8) void {
         const topics = librdkafka.rd_kafka_topic_partition_list_new(@intCast(topic_names.len));
         if (topics == null) {
             @panic("failed to create topic list");
@@ -48,12 +48,12 @@ pub const Consumer = struct {
         std.log.info("kafka consumer subscribed", .{});
     }
 
-    pub fn poll(self: *Consumer, timeout: c_int) ?*librdkafka.rd_kafka_message_t {
+    pub fn poll(self: Self, timeout: c_int) ?*librdkafka.rd_kafka_message_t {
         self._msg_count += 1;
         return librdkafka.rd_kafka_consumer_poll(self._consumer, timeout);
     }
 
-    pub fn commitOffset(self: Consumer, message: *librdkafka.rd_kafka_message_t) void {
+    pub fn commitOffset(self: Self, message: *librdkafka.rd_kafka_message_t) void {
         const err = librdkafka.rd_kafka_commit_message(self._consumer, message, 1);
         if (err != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
             std.log.err("failed to commit offset {s}", .{utils.getLastError()});
@@ -62,7 +62,7 @@ pub const Consumer = struct {
         std.log.info("Offset {d} commited", .{message.offset});
     }
 
-    pub fn commitOffsetOnEvery(self: Consumer, count: u32, message: *librdkafka.rd_kafka_message_t) void {
+    pub fn commitOffsetOnEvery(self: Self, count: u32, message: *librdkafka.rd_kafka_message_t) void {
         if (self._msg_count % count == 0) {
             const offset: c_int = @intCast(message.offset);
             if (librdkafka.rd_kafka_commit_message(self._consumer, message, offset) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
@@ -72,7 +72,7 @@ pub const Consumer = struct {
         }
     }
 
-    pub fn unsubscribe(self: Consumer) void {
+    pub fn unsubscribe(self: Self) void {
         if (librdkafka.rd_kafka_unsubscribe(self._consumer) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
             std.log.err("failed to commit offset {s}", .{utils.getLastError()});
             return;
@@ -80,7 +80,7 @@ pub const Consumer = struct {
         std.log.info("consumer unsubscribed successfully.", .{});
     }
 
-    pub fn close(self: Consumer) void {
+    pub fn close(self: Self) void {
         if (librdkafka.rd_kafka_consumer_close(self._consumer) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
             std.log.err("Failed to close consumer: {s}", .{utils.getLastError()});
             return;
@@ -89,13 +89,17 @@ pub const Consumer = struct {
     }
 };
 
+// TODO: mock it
 test "test consumer init ok" {
-    var consumer_config_builder = config.Builder.get();
+    var consumer_config_builder = kafka.ConfigBuilder.get();
     const consumer_conf = consumer_config_builder
         .with("bootstrap.servers", "localhost:9092")
         .with("group.id", "consumer1")
-        .with("auto.offset.reset", "earliest")
-        .with("auto.commit.interval.ms", "5000")
+        .with("auto.offset.reset", "latest")
+        .with("enable.auto.commit", "false")
+        .with("isolation.level", "read_committed")
+        .with("reconnect.backoff.ms", "100")
+        .with("reconnect.backoff.max.ms", "1000")
         .build();
     var kafka_consumer = Consumer.init(consumer_conf);
     const topics = [_][]const u8{"topic-name2"};

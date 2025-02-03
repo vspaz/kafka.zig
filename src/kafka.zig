@@ -9,6 +9,4 @@ test {
     std.testing.refAllDecls(@This());
 }
 
-pub fn main() !void {
-
-}
+pub fn main() !void {}

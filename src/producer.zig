@@ -2,11 +2,12 @@ const librdkafka = @cImport({
     @cInclude("librdkafka/rdkafka.h");
 });
 const std = @import("std");
-const config = @import("config.zig");
+const kafka = @import("kafka.zig");
 const topic = @import("topic.zig");
 const utils = @import("utils.zig");
 
 pub const Producer = struct {
+    const Self = @This();
     _producer: ?*librdkafka.rd_kafka_t,
     _topic: ?*librdkafka.struct_rd_kafka_topic_s,
 
@@ -20,19 +21,19 @@ pub const Producer = struct {
         return kafka_producer;
     }
 
-    pub fn init(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s, topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s, topic_name: [*]const u8) Producer {
+    pub fn init(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s, topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s, topic_name: [*]const u8) Self {
         const kafka_producer = createKafkaProducer(kafka_conf);
         const kafka_topic: ?*librdkafka.struct_rd_kafka_topic_s = topic.createTopic(kafka_producer, topic_conf, topic_name);
-        return .{ ._producer = kafka_producer, ._topic = kafka_topic };
+        return Self{ ._producer = kafka_producer, ._topic = kafka_topic };
     }
 
-    pub fn deinit(self: Producer) void {
+    pub fn deinit(self: Self) void {
         librdkafka.rd_kafka_topic_destroy(self._topic);
         librdkafka.rd_kafka_destroy(self._producer);
         std.log.info("kafka producer deinitialized", .{});
     }
 
-    pub fn send(self: Producer, message: []const u8, key: []const u8) void {
+    pub fn send(self: Self, message: []const u8, key: []const u8) void {
         const message_ptr: ?*anyopaque = @constCast(message.ptr);
         const key_ptr: ?*anyopaque = @constCast(key.ptr);
         const err = librdkafka.rd_kafka_produce(
@@ -54,24 +55,30 @@ pub const Producer = struct {
     }
 
     // Wait for all messages to be sent.
-    pub fn wait(self: Producer, interval: u16) void {
+    pub fn wait(self: Self, interval: u16) void {
         while (librdkafka.rd_kafka_outq_len(self._producer) > 0) {
             _ = librdkafka.rd_kafka_poll(self._producer, interval);
         }
     }
 };
 
+// TODO: mock it
 test "test get Producer Ok" {
-    var ConfigBuilder = config.Builder.get();
+    var ConfigBuilder = kafka.ConfigBuilder.get();
     const conf = ConfigBuilder
         .with("bootstrap.servers", "localhost:9092")
-        .with("batch.num.messages", "100")
+        .with("enable.idempotence", "true")
+        .with("batch.num.messages", "10")
+        .with("reconnect.backoff.ms", "1000")
+        .with("reconnect.backoff.max.ms", "5000")
+        .with("transaction.timeout.ms", "10000")
         .with("linger.ms", "100")
+        .with("delivery.timeout.ms", "1800000")
         .with("compression.codec", "snappy")
         .with("batch.size", "16384")
         .build();
 
-    var topic_config_builder = topic.Builder.get();
+    var topic_config_builder = kafka.TopicBuilder.get();
     const topic_conf = topic_config_builder
         .with("request.required.acks", "all")
         .build();

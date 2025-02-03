@@ -13,10 +13,11 @@ pub fn createTopic(producer: ?*librdkafka.rd_kafka_t, topic_conf: ?*librdkafka.s
 
 // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#topic-configuration-properties
 pub const Builder = struct {
+    const Self = @This();
     _topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s,
 
-    pub fn get() Builder {
-        return .{ ._topic_conf = getTopicConf() };
+    pub fn get() Self {
+        return Self{ ._topic_conf = getTopicConf() };
     }
 
     pub fn getTopicConf() ?*librdkafka.struct_rd_kafka_topic_conf_s {
@@ -27,19 +28,19 @@ pub const Builder = struct {
         return topic_conf;
     }
 
-    fn setTopicConfigParam(self: *Builder, topic_param: [*c]const u8, topic_value: [*c]const u8) void {
+    fn setTopicConfigParam(self: Self, topic_param: [*c]const u8, topic_value: [*c]const u8) void {
         var error_message: [512]u8 = undefined;
         if (librdkafka.rd_kafka_topic_conf_set(self._topic_conf, topic_param, topic_value, &error_message, error_message.len) != librdkafka.RD_KAFKA_CONF_OK) {
             @panic(&error_message);
         }
     }
 
-    pub fn with(self: *Builder, param: [*c]const u8, value: [*c]const u8) *Builder {
+    pub fn with(self: Self, param: [*c]const u8, value: [*c]const u8) Self {
         setTopicConfigParam(self, param, value);
         return self;
     }
 
-    pub fn build(self: *Builder) ?*librdkafka.struct_rd_kafka_topic_conf_s {
+    pub fn build(self: Self) ?*librdkafka.struct_rd_kafka_topic_conf_s {
         return self._topic_conf;
     }
 };
@@ -47,7 +48,7 @@ pub const Builder = struct {
 test "test get topic Builder Ok" {
     var TopicConfigBuilder = Builder.get();
     const topic_conf = TopicConfigBuilder
-        .with("request.required.acks", "all")
+        .with("acks", "all")
         .build();
 
     std.debug.assert(@TypeOf(topic_conf) == ?*librdkafka.struct_rd_kafka_topic_conf_s);

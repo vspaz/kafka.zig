@@ -85,8 +85,8 @@ fn jsonConsumer() !void {
         .with("auto.offset.reset", "latest")
         .with("enable.auto.commit", "false")
         .with("isolation.level", "read_committed")
+        .with("reconnect.backoff.ms", "100")
         .with("reconnect.backoff.max.ms", "1000")
-        .with("reconnect.backoff.max.ms", "5000")
         .build();
     var kafka_consumer = kafka.Consumer.init(consumer_conf);
     defer kafka_consumer.deinit();

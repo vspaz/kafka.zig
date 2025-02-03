@@ -1,9 +1,9 @@
 # kafka.zig
-A simple-to-use Kafka Zig library built on top of **C/C++** `librdkafka`.
+A simple-to-use **Zig** **Kafka** library built on top of **C/C++** `librdkafka`.
 
 ## Dependencies
 Linux - Debian/Ubuntu.
-1. install C/C++ `librdkafka`.
+1. install `librdkafka`.
 
 ```shell
 sudo apt-get update && sudo apt-get upgrade -y
@@ -196,8 +196,8 @@ fn jsonConsumer() !void {
         .with("auto.offset.reset", "latest")
         .with("enable.auto.commit", "false")
         .with("isolation.level", "read_committed")
+        .with("rreconnect.backoff.ms", "100")
         .with("reconnect.backoff.max.ms", "1000")
-        .with("reconnect.backoff.max.ms", "5000")
         .build();
     var kafka_consumer = kafka.Consumer.init(consumer_conf);
     defer kafka_consumer.deinit();
