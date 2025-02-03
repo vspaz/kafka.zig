@@ -8,3 +8,7 @@ pub const toSlice = @import("utils.zig").toSlice;
 test {
     std.testing.refAllDecls(@This());
 }
+
+pub fn main() !void {
+
+}
