@@ -11,6 +11,6 @@ pub const Message = struct {
         if (self._message.payload != null and self._message.len > 0) {
             return @as([*]u8, @ptrCast(self._message.payload))[0..self._message.len];
         }
-        return []const u8{};
+        return &[_]u8{};
     }
 };
