@@ -48,9 +48,13 @@ pub const Consumer = struct {
         std.log.info("kafka consumer subscribed", .{});
     }
 
-    pub fn poll(self: *Self, timeout: c_int) ?*librdkafka.rd_kafka_message_t {
+    pub fn poll(self: *Self, timeout: c_int) ?kafka.Message {
         self._msg_count += 1;
-        return librdkafka.rd_kafka_consumer_poll(self._consumer, timeout);
+        const msg_or_null = librdkafka.rd_kafka_consumer_poll(self._consumer, timeout);
+        if (msg_or_null) |msg| {
+            return kafka.Message{ ._message = msg };
+        }
+        return null;
     }
 
     pub fn commitOffset(self: Self, message: *librdkafka.rd_kafka_message_t) void {
