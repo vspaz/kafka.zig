@@ -97,7 +97,7 @@ fn jsonConsumer() !void {
     while (true) {
         const message_or_null: ?kafka.Message = kafka_consumer.poll(1000);
         if (message_or_null) |message| {
-            const payload: ?[]const u8 = message.getPayload();
+            const payload: []const u8 = message.getPayload();
             std.log.info("Received message: {s}", .{payload});
             const parsed_payload = try std.json.parseFromSlice(Data, allocator, payload, .{});
             defer parsed_payload.deinit();
