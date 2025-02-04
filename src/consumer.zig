@@ -57,19 +57,19 @@ pub const Consumer = struct {
         return null;
     }
 
-    pub fn commitOffset(self: Self, message: *librdkafka.rd_kafka_message_t) void {
-        const err = librdkafka.rd_kafka_commit_message(self._consumer, message, 1);
+    pub fn commitOffset(self: Self, message: kafka.Message) void {
+        const err = librdkafka.rd_kafka_commit_message(self._consumer, message._message, 1);
         if (err != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
             std.log.err("failed to commit offset {s}", .{utils.getLastError()});
             return;
         }
-        std.log.info("Offset {d} commited", .{message.offset});
+        std.log.info("Offset {d} commited", .{message._message.offset});
     }
 
-    pub fn commitOffsetOnEvery(self: Self, count: u32, message: *librdkafka.rd_kafka_message_t) void {
+    pub fn commitOffsetOnEvery(self: Self, count: u32, message: kafka.Message) void {
         if (self._msg_count % count == 0) {
-            const offset: c_int = @intCast(message.offset);
-            if (librdkafka.rd_kafka_commit_message(self._consumer, message, offset) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
+            const offset: c_int = @intCast(message._message.offset);
+            if (librdkafka.rd_kafka_commit_message(self._consumer, message._message, offset) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
                 std.log.err("failed to commit offset {s}", .{utils.getLastError()});
             }
             std.log.info("Offset {d} commited", .{offset});
