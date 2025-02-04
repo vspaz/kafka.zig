@@ -25,8 +25,6 @@ pub const Consumer = struct {
     }
 
     pub fn deinit(self: Self) void {
-        self.unsubscribe();
-        self.close();
         librdkafka.rd_kafka_destroy(self._consumer);
         std.log.info("kafka consumer deinitialized", .{});
     }
@@ -63,12 +61,12 @@ pub const Consumer = struct {
             std.log.err("failed to commit offset {s}", .{utils.getLastError()});
             return;
         }
-        std.log.info("Offset {d} commited", .{message._message.offset});
+        std.log.info("Offset {d} commited", .{message.getOffset()});
     }
 
     pub fn commitOffsetOnEvery(self: Self, count: u32, message: kafka.Message) void {
         if (self._msg_count % count == 0) {
-            const offset: c_int = @intCast(message._message.offset);
+            const offset: c_int = @intCast(message.getOffset());
             if (librdkafka.rd_kafka_commit_message(self._consumer, message._message, offset) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
                 std.log.err("failed to commit offset {s}", .{utils.getLastError()});
             }
