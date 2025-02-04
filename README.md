@@ -208,7 +208,7 @@ fn jsonConsumer() !void {
     while (true) {
         const msg = kafka_consumer.poll(1000);
         if (msg) |message| {
-            const payload: []const u8 = kafka.toSlice(message);
+            const payload: []const u8 = message.getPayload();
             std.log.info("Received message: {s}", .{payload});
             const parsed_payload = try std.json.parseFromSlice(Data, allocator, payload, .{});
             defer parsed_payload.deinit();
