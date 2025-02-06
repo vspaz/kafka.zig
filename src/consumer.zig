@@ -8,6 +8,7 @@ const kafka = @import("kafka.zig");
 pub const Consumer = struct {
     const Self = @This();
     _consumer: ?*librdkafka.rd_kafka_t,
+    _topics: ?*librdkafka.struct_rd_kafka_topic_partition_list_s = undefined,
     _msg_count: u32 = 0,
 
     fn createKafkaConsumer(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s) ?*librdkafka.rd_kafka_t {
@@ -25,20 +26,20 @@ pub const Consumer = struct {
     }
 
     pub fn deinit(self: Self) void {
+        librdkafka.rd_kafka_topic_partition_list_destroy(self._topics);
         librdkafka.rd_kafka_destroy(self._consumer);
         std.log.info("kafka consumer deinitialized", .{});
     }
 
-    pub fn subscribe(self: Self, topic_names: []const []const u8) void {
-        const topics = librdkafka.rd_kafka_topic_partition_list_new(@intCast(topic_names.len));
-        if (topics == null) {
+    pub fn subscribe(self: *Self, topic_names: []const []const u8) void {
+        self._topics = librdkafka.rd_kafka_topic_partition_list_new(@intCast(topic_names.len));
+        if (self._topics == null) {
             @panic("failed to create topic list");
         }
-        defer librdkafka.rd_kafka_topic_partition_list_destroy(topics);
         for (topic_names) |topic| {
-            _ = librdkafka.rd_kafka_topic_partition_list_add(topics, topic.ptr, librdkafka.RD_KAFKA_PARTITION_UA);
+            _ = librdkafka.rd_kafka_topic_partition_list_add(self._topics, topic.ptr, librdkafka.RD_KAFKA_PARTITION_UA);
         }
-        if (librdkafka.rd_kafka_subscribe(self._consumer, topics) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
+        if (librdkafka.rd_kafka_subscribe(self._consumer, self._topics) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
             std.log.err("failed to subscribe {s}", .{utils.getLastError()});
             @panic("failed to subscribe {s}");
         }
@@ -95,15 +96,23 @@ pub const Consumer = struct {
 test "test consumer init ok" {
     var consumer_config_builder = kafka.ConfigBuilder.get();
     const consumer_conf = consumer_config_builder
+        .with("debug", "all")
         .with("bootstrap.servers", "localhost:9092")
         .with("group.id", "consumer1")
         .with("auto.offset.reset", "latest")
         .with("enable.auto.commit", "false")
-        .with("isolation.level", "read_committed")
         .with("reconnect.backoff.ms", "100")
         .with("reconnect.backoff.max.ms", "1000")
         .build();
     var kafka_consumer = Consumer.init(consumer_conf);
+    defer kafka_consumer.deinit();
     const topics = [_][]const u8{"topic-name2"};
     kafka_consumer.subscribe(&topics);
+    const message_or_null = kafka_consumer.poll(1000);
+    if (message_or_null) |message| {
+        kafka_consumer.commitOffset(message);
+    }
+    std.time.sleep(1_000_000_000);
+    kafka_consumer.unsubscribe();
+    kafka_consumer.close();
 }

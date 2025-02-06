@@ -41,6 +41,7 @@ pub const Builder = struct {
 test "test Producer ConfigBuilder Ok" {
     var ConfigBuilder = Builder.get();
     const conf = ConfigBuilder
+        .with("debug", "all")
         .with("bootstrap.servers", "localhost:9092")
         .with("enable.idempotence", "true")
         .with("batch.num.messages", "10")

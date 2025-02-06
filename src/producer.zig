@@ -28,6 +28,9 @@ pub const Producer = struct {
     }
 
     pub fn deinit(self: Self) void {
+        if (librdkafka.rd_kafka_flush(self._producer, 10_000) != 0) {
+            std.log.err("failed to flush messages", .{});
+        }
         librdkafka.rd_kafka_topic_destroy(self._topic);
         librdkafka.rd_kafka_destroy(self._producer);
         std.log.info("kafka producer deinitialized", .{});
@@ -71,7 +74,6 @@ test "test get Producer Ok" {
         .with("batch.num.messages", "10")
         .with("reconnect.backoff.ms", "1000")
         .with("reconnect.backoff.max.ms", "5000")
-        .with("transaction.timeout.ms", "10000")
         .with("linger.ms", "100")
         .with("delivery.timeout.ms", "1800000")
         .with("compression.codec", "snappy")

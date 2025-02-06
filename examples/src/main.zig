@@ -11,7 +11,6 @@ fn plainTextProducer() void {
         .with("batch.num.messages", "10")
         .with("reconnect.backoff.ms", "1000")
         .with("reconnect.backoff.max.ms", "5000")
-        .with("transaction.timeout.ms", "10000")
         .with("linger.ms", "100")
         .with("delivery.timeout.ms", "1800000")
         .with("compression.codec", "snappy")
@@ -42,7 +41,6 @@ fn jsonProducer() !void {
         .with("batch.num.messages", "10")
         .with("reconnect.backoff.ms", "1000")
         .with("reconnect.backoff.max.ms", "5000")
-        .with("transaction.timeout.ms", "10000")
         .with("linger.ms", "100")
         .with("delivery.timeout.ms", "1800000")
         .with("compression.codec", "snappy")
@@ -84,7 +82,6 @@ fn jsonConsumer() !void {
         .with("group.id", "consumer1")
         .with("auto.offset.reset", "latest")
         .with("enable.auto.commit", "false")
-        .with("isolation.level", "read_committed")
         .with("reconnect.backoff.ms", "100")
         .with("reconnect.backoff.max.ms", "1000")
         .build();
