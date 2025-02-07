@@ -24,8 +24,8 @@
     // internet connectivity.
     .dependencies = .{
         .@"kafka.zig" = .{
-            .url = "git+https://github.com/vspaz/kafka.zig.git?ref=main#bfaceedb18e3b39fd5efb69a15c31b8f7c1e1aa2",
-            .hash = "12201c10e26afa194c0eff81d5500ad86bea098df187b2e0c191e3dcaec39d99a5e4",
+            .url = "git+https://github.com/vspaz/kafka.zig.git?ref=main#7be345e6d64307a7f90102ad21f144a1220723e7",
+            .hash = "122005c35de30fc922256441c685851eb190a9b1228386e06f089519f2e89f10aa46",
         },
     },
     .paths = .{
