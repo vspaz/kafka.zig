@@ -191,6 +191,7 @@ fn jsonConsumer() !void {
 
     var consumer_config_builder = kafka.ConfigBuilder.get();
     const consumer_conf = consumer_config_builder
+        .with("debug", "all")
         .with("bootstrap.servers", "localhost:9092")
         .with("group.id", "consumer1")
         .with("auto.offset.reset", "latest")
@@ -208,6 +209,12 @@ fn jsonConsumer() !void {
     while (true) {
         const msg = kafka_consumer.poll(1000);
         if (msg) |message| {
+            std.log.info("offset: {d}", .{message.getOffset()});
+            std.log.info("partition: {d}", .{message.getPartition()});
+            std.log.info("message length {d}", .{message.getPayloadLen()});
+            std.log.info("key {s}", .{message.getKey()});
+            std.log.info("key length {d}", .{message.getKeyLen()});
+            std.log.info("error code {d}", .{message.getErrCode()});
             const payload: []const u8 = message.getPayload();
             std.log.info("Received message: {s}", .{payload});
             const parsed_payload = try std.json.parseFromSlice(Data, allocator, payload, .{});

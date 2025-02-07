@@ -23,14 +23,14 @@ pub const Message = struct {
     }
 
     pub fn getKey(self: Self) []const u8 {
-        if (self._message.key != null and self._key.len > 0) {
+        if (self._message.key != null and self._message.key.len > 0) {
             return @as([*]u8, @ptrCast(self._message.key))[0..self._message.key];
         }
         return &[_]u8{};
     }
 
     pub fn getKeyLen(self: Self) usize {
-        return self._message.key_len;
+        return self._message.key.len;
     }
 
     pub fn getOffset(self: Self) i64 {
