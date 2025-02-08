@@ -36,7 +36,7 @@ pub const Message = struct {
     }
 
     pub fn getKeyLen(self: Self) usize {
-       return self._message.key_len;
+        return self._message.key_len;
     }
 
     pub fn getOffset(self: Self) i64 {
