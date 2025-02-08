@@ -99,7 +99,7 @@ test "test consumer init ok" {
         .with("debug", "all")
         .with("bootstrap.servers", "localhost:9092")
         .with("group.id", "consumer1")
-        .with("auto.offset.reset", "latest")
+        .with("auto.offset.reset", "earliest")
         .with("enable.auto.commit", "false")
         .with("reconnect.backoff.ms", "100")
         .with("reconnect.backoff.max.ms", "1000")
@@ -108,11 +108,12 @@ test "test consumer init ok" {
     defer kafka_consumer.deinit();
     const topics = [_][]const u8{"topic-name2"};
     kafka_consumer.subscribe(&topics);
-    const message_or_null = kafka_consumer.poll(1000);
+    const message_or_null = kafka_consumer.poll(100);
     if (message_or_null) |message| {
+        std.log.info("key {s}", .{message.getKey()});
+        _ = message.getPayload();
         kafka_consumer.commitOffset(message);
     }
-    std.time.sleep(1_000_000_000);
     kafka_consumer.unsubscribe();
     kafka_consumer.close();
 }
