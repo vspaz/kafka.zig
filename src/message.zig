@@ -3,6 +3,7 @@ const librdkafka = @cImport({
     @cInclude("librdkafka/rdkafka.h");
 });
 
+// https://docs.confluent.io/platform/current/clients/librdkafka/html/classRdKafka_1_1Message.html
 pub const Message = struct {
     const Self = @This();
     _message: *librdkafka.rd_kafka_message_t,
