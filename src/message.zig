@@ -47,4 +47,9 @@ pub const Message = struct {
     pub fn getErrCode(self: Self) i32 {
         return @as(i32, self._message.err);
     }
+
+    pub fn getTimestamp(self: Self) i64 {
+        var set_by: c_uint = undefined; // 0 -> no timestamp is available; 1 -> set by producer; 2 -> set by kafka broker
+        return librdkafka.rd_kafka_message_timestamp(self._message, &set_by);
+    }
 };

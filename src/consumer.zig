@@ -36,8 +36,8 @@ pub const Consumer = struct {
         if (self._topics == null) {
             @panic("failed to create topic list");
         }
-        for (topic_names) |topic| {
-            _ = librdkafka.rd_kafka_topic_partition_list_add(self._topics, topic.ptr, librdkafka.RD_KAFKA_PARTITION_UA);
+        for (topic_names) |topic_name| {
+            _ = librdkafka.rd_kafka_topic_partition_list_add(self._topics, topic_name.ptr, librdkafka.RD_KAFKA_PARTITION_UA);
         }
         if (librdkafka.rd_kafka_subscribe(self._consumer, self._topics) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
             std.log.err("failed to subscribe {s}", .{utils.getLastError()});
@@ -96,7 +96,6 @@ pub const Consumer = struct {
 test "test consumer init ok" {
     var consumer_config_builder = kafka.ConfigBuilder.get();
     const consumer_conf = consumer_config_builder
-        .with("debug", "all")
         .with("bootstrap.servers", "localhost:9092")
         .with("group.id", "consumer1")
         .with("auto.offset.reset", "earliest")

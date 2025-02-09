@@ -96,10 +96,11 @@ fn jsonConsumer() !void {
         if (message_or_null) |message| {
             std.log.info("offset: {d}", .{message.getOffset()});
             std.log.info("partition: {d}", .{message.getPartition()});
-            std.log.info("message length {d}", .{message.getPayloadLen()});
-            std.log.info("key {s}", .{message.getKey()});
-            std.log.info("key length {d}", .{message.getKeyLen()});
-            std.log.info("error code {d}", .{message.getErrCode()});
+            std.log.info("message length: {d}", .{message.getPayloadLen()});
+            std.log.info("key: {s}", .{message.getKey()});
+            std.log.info("key length: {d}", .{message.getKeyLen()});
+            std.log.info("error code: {d}", .{message.getErrCode()});
+            std.log.info("timestamp: {d}", .{message.getTimestamp()});
             const payload: []const u8 = message.getPayload();
             std.log.info("Received message: {s}", .{payload});
             const parsed_payload = try std.json.parseFromSlice(Data, allocator, payload, .{});

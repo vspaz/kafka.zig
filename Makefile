@@ -19,7 +19,7 @@ clean:
 	rm -rf zig-out
 
 kafka-start:
-	docker compose up
+	docker compose up -d
 
 kafka-stop:
 	docker compose stop
