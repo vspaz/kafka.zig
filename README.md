@@ -1,13 +1,21 @@
 # kafka.zig
-A simple-to-use **Zig** **Kafka** library built on top of **C/C++** `librdkafka`.
+**kafka.zig** is a simple-to-use **Zig** **Kafka** client built on top of **C/C++** `librdkafka`.
 
 ## Dependencies
-Linux - Debian/Ubuntu.
+
 1. install `librdkafka`.
 
+Linux - .deb-based, e.g., Debian, Ubuntu etc.
 ```shell
-sudo apt-get update && sudo apt-get upgrade -y
-sudo apt-get install librdkafka-dev
+apt-get install librdkafka-dev
+```
+Linux - .rpm-based, e.g., RedHat, Fedora and other RHEL derivatives.
+```shell
+yum install librdkafka-devel
+```
+Mac OSX
+```shell
+brew install librdkafka
 ```
 2. Run the following command inside your project:
 ```shell
@@ -207,14 +215,15 @@ fn jsonConsumer() !void {
     kafka_consumer.subscribe(&topics);
 
     while (true) {
-        const msg = kafka_consumer.poll(1000);
-        if (msg) |message| {
+        const message_or_null: ?kafka.Message = kafka_consumer.poll(1000);
+        if (message_or_null) |message| {
             std.log.info("offset: {d}", .{message.getOffset()});
             std.log.info("partition: {d}", .{message.getPartition()});
-            std.log.info("message length {d}", .{message.getPayloadLen()});
-            std.log.info("key {s}", .{message.getKey()});
-            std.log.info("key length {d}", .{message.getKeyLen()});
-            std.log.info("error code {d}", .{message.getErrCode()});
+            std.log.info("message length: {d}", .{message.getPayloadLen()});
+            std.log.info("key: {s}", .{message.getKey()});
+            std.log.info("key length: {d}", .{message.getKeyLen()});
+            std.log.info("error code: {d}", .{message.getErrCode()});
+            std.log.info("timestamp: {d}", .{message.getTimestamp()});
             const payload: []const u8 = message.getPayload();
             std.log.info("Received message: {s}", .{payload});
             const parsed_payload = try std.json.parseFromSlice(Data, allocator, payload, .{});
@@ -223,6 +232,7 @@ fn jsonConsumer() !void {
             kafka_consumer.commitOffsetOnEvery(10, message); // or kafka_consumer.commitOffset(message) to commit on every message.
         }
     }
+    // when the work is done call 'unsubscribe' & 'close'
     kafka_consumer.unsubscribe();
     kafka_consumer.close();
 }
