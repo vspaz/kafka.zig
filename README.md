@@ -1,12 +1,13 @@
 # kafka.zig
-`kafka.zig` is the ** Apache Kafka Zig** client library built on top of **C/C++** [librdkafka](https://docs.confluent.io/platform/current/clients/librdkafka/html/index.html).
+`kafka.zig` is the **Apache Kafka Zig** client library built on top of **C/C++** [librdkafka](https://docs.confluent.io/platform/current/clients/librdkafka/html/index.html).
 This lib makes it plain simple to write your own **Apache Kafka** producers and consumers in **Zig**.
 `kafka.zig` is also very lean and efficient.
 ## Installation
 > [!IMPORTANT]
 > `kafka.zig` relies on C/C++ `librdkafka`, so we need to install it first before we start using `kafka.zig`. 
 > The good news is that's the only dependency that's required by `kafka.zig`.
-1. install `librdkafka`.
+1. install `librdkafka`
+
 :penguin: Linux - .deb-based, e.g., Debian, Ubuntu etc.
 ```shell
 apt-get install librdkafka-dev
