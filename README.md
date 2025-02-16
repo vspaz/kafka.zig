@@ -1,15 +1,17 @@
 # kafka.zig
-**kafka.zig** is a simple-to-use **Zig** **Kafka** client built on top of **C/C++** `librdkafka`.
-
-## Dependencies
-
+`kafka.zig` is the ** Apache Kafka Zig** client library built on top of **C/C++** [librdkafka](https://docs.confluent.io/platform/current/clients/librdkafka/html/index.html).
+This lib makes it plain simple to write your own **Apache Kafka** producers and consumers in **Zig**.
+`kafka.zig` is also very lean and efficient.
+## Installation
+> [!IMPORTANT]
+> `kafka.zig` relies on C/C++ `librdkafka`, so we need to install it first before we start using `kafka.zig`. 
+> The good news is that's the only dependency that's required by `kafka.zig`.
 1. install `librdkafka`.
-
-Linux - .deb-based, e.g., Debian, Ubuntu etc.
+:penguin: Linux - .deb-based, e.g., Debian, Ubuntu etc.
 ```shell
 apt-get install librdkafka-dev
 ```
-Linux - .rpm-based, e.g., RedHat, Fedora and other RHEL derivatives.
+:penguin: Linux - .rpm-based, e.g., RedHat, Fedora and other RHEL derivatives.
 ```shell
 yum install librdkafka-devel
 ```
@@ -30,7 +32,7 @@ it should add the following dependency to your project _build.zig.zon_ file, e.g
     },
 },
 ```
-3. Navigate to _build.zig_ and add the following 3 lines as shown below:
+3. Navigate to _build.zig_ file located in the root directory and add the following 3 lines as shown below:
 ```zig
  const exe = b.addExecutable(.{
         .name = "yourproject",
@@ -46,23 +48,14 @@ it should add the following dependency to your project _build.zig.zon_ file, e.g
 ```
 4. Test the project build with `zig build`
 There should be no error!
-
-## How-to
-
-Import _kafka.zig_ as a dependency in your code as follows:
+5. Import `kafka.zig` in your code as:
 ```zig
 const kafka = @import("kafka.zig");
 ```
-and you're good to go!
-
-### Configuration
-#### Producer/Consumer
-
+and you're good to go! :rocket:
+## Configuration
+### Producer/Consumer
 Configuration parameters can be set via `kafka.ConfigBuilder`
-see all possible config options at:
-
-https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#global-configuration-properties
-
 An example of using `kafka.ConfigBuilder`
 ```zig
 const kafka = @import("kafka.zig");
@@ -83,12 +76,11 @@ pub fn main() !void {
         .build();
 }
 ```
-
-#### Topic
+>[!TIP]
+> see all possible config options at:
+https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#global-configuration-properties
+### Topic
 A topic is configured similarly to Producer/Consumer, but using `kafka.TopicBuilder` class.
-See all possible config options for a topic configuration at: 
-
-https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#topic-configuration-properties.
 
 An example of configuring a topic via `kafka.TopicBuilder`.
 ```zig
@@ -100,8 +92,10 @@ pub fn main() !void {
         .build();
 }
 ```
-### Producer
-#### a simple producer sending plain text data.
+> [!TIP]
+> See all possible config options for a topic configuration at: https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#topic-configuration-properties.
+## Producers
+A simple Zig Apache Kafka producer sending plain text data.
 ```zig
 const kafka = @import("kafka.zig");
 
@@ -136,8 +130,7 @@ pub fn main() !void {
     plainTextProducer();
 }
 ```
-
-### Producer, sending JSON or binary data.
+An example of a **Kafka Zig** producer, producing JSON or binary data.
 ```zig
 const std = @import("std");
 const kafka = @import("kafka.zig");
@@ -183,11 +176,11 @@ pub fn main() !void {
     try jsonProducer();
 }
 ```
-
 ### Callbacks
-
 If you wish to set a producer callback, you can do it with `kafka.setCb` as follows:
 ```zig
+const kafka = @import("kafka.zig");
+
 fn onMessageSent(message: kafka.Message) void {
     std.log.info("Message sent: {s}", .{message.getPayload()});
 }
@@ -202,10 +195,9 @@ fn producer() void {
 }
 ```
 > [!NOTE] 
-> the callback is a part of producer configuration and should be set before producer is initialized!
-
-### Consumer, consuming JSON or binary data.
-
+> The callback is a part of producer configuration and should be set before producer is initialized!
+## Consumers
+An example of a **Zig Kafka** consumer, consuming JSON or binary data.
 ```zig
 const std = @import("std");
 const kafka = @import("kafka.zig");
@@ -264,3 +256,8 @@ pub fn main() !void {
     consumer_worker.join();
 }
 ```
+## Metadata
+TODO!: to be added
+
+## Examples
+Please, refer to the examples [section](https://github.com/vspaz/kafka.zig/blob/main/examples/README.md).

@@ -1,15 +1,18 @@
 const std = @import("std");
+
 const librdkafka = @cImport({
     @cInclude("librdkafka/rdkafka.h");
 });
+
+const config = @import("config.zig");
+const Message = @import("message.zig").Message;
 const utils = @import("utils.zig");
-const kafka = @import("kafka.zig");
 
 pub const Consumer = struct {
     const Self = @This();
     _consumer: ?*librdkafka.rd_kafka_t,
     _topics: ?*librdkafka.struct_rd_kafka_topic_partition_list_s = undefined,
-    _msg_count: u32 = 0,
+    _message_count: u32 = 0,
 
     fn createKafkaConsumer(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s) ?*librdkafka.rd_kafka_t {
         var error_message: [512]u8 = undefined;
@@ -47,16 +50,16 @@ pub const Consumer = struct {
         std.log.info("kafka consumer subscribed", .{});
     }
 
-    pub fn poll(self: *Self, timeout: c_int) ?kafka.Message {
-        self._msg_count += 1;
-        const msg_or_null = librdkafka.rd_kafka_consumer_poll(self._consumer, timeout);
-        if (msg_or_null) |msg| {
-            return kafka.Message{ ._message = msg };
+    pub fn poll(self: *Self, comptime timeout: c_int) ?Message {
+        self._message_count += 1;
+        const message_or_null = librdkafka.rd_kafka_consumer_poll(self._consumer, timeout);
+        if (message_or_null) |message| {
+            return .{ ._message = message };
         }
         return null;
     }
 
-    pub fn commitOffset(self: Self, message: kafka.Message) void {
+    pub fn commitOffset(self: Self, message: Message) void {
         const err = librdkafka.rd_kafka_commit_message(self._consumer, message._message, 1);
         if (err != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
             std.log.err("failed to commit offset {s}", .{utils.getLastError()});
@@ -65,7 +68,7 @@ pub const Consumer = struct {
         std.log.info("Offset {d} commited", .{message.getOffset()});
     }
 
-    pub fn commitOffsetOnEvery(self: Self, count: u32, message: kafka.Message) void {
+    pub fn commitOffsetOnEvery(self: Self, comptime count: u32, message: Message) void {
         if (self._msg_count % count == 0) {
             const offset: c_int = @intCast(message.getOffset());
             if (librdkafka.rd_kafka_commit_message(self._consumer, message._message, offset) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
@@ -94,7 +97,7 @@ pub const Consumer = struct {
 
 // TODO: mock it
 test "test consumer init ok" {
-    var consumer_config_builder = kafka.ConfigBuilder.get();
+    var consumer_config_builder = config.Builder.get();
     const consumer_conf = consumer_config_builder
         .with("bootstrap.servers", "localhost:9092")
         .with("group.id", "consumer1")

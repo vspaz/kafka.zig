@@ -1,4 +1,5 @@
 const std = @import("std");
+
 const librdkafka = @cImport({
     @cInclude("librdkafka/rdkafka.h");
 });
@@ -18,11 +19,11 @@ pub const Message = struct {
         return &[_]u8{};
     }
 
-    pub fn getPartition(self: Self) i32 {
+    pub inline fn getPartition(self: Self) i32 {
         return self._message.partition;
     }
 
-    pub fn getPayloadLen(self: Self) usize {
+    pub inline fn getPayloadLen(self: Self) usize {
         return self._message.len;
     }
 
@@ -36,19 +37,19 @@ pub const Message = struct {
         return &[_]u8{};
     }
 
-    pub fn getKeyLen(self: Self) usize {
+    pub inline fn getKeyLen(self: Self) usize {
         return self._message.key_len;
     }
 
-    pub fn getOffset(self: Self) i64 {
+    pub inline fn getOffset(self: Self) i64 {
         return self._message.offset;
     }
 
-    pub fn getErrCode(self: Self) i32 {
+    pub inline fn getErrCode(self: Self) i32 {
         return @as(i32, self._message.err);
     }
 
-    pub fn getTimestamp(self: Self) i64 {
+    pub inline fn getTimestamp(self: Self) i64 {
         var set_by: c_uint = undefined; // 0 -> no timestamp is available; 1 -> set by producer; 2 -> set by kafka broker
         return librdkafka.rd_kafka_message_timestamp(self._message, &set_by);
     }

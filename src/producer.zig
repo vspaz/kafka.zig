@@ -1,8 +1,12 @@
+const std = @import("std");
+
 const librdkafka = @cImport({
     @cInclude("librdkafka/rdkafka.h");
 });
-const std = @import("std");
-const kafka = @import("kafka.zig");
+
+const callback = @import("callback.zig");
+const config = @import("config.zig");
+const Message = @import("message.zig").Message;
 const topic = @import("topic.zig");
 const utils = @import("utils.zig");
 
@@ -28,7 +32,7 @@ pub const Producer = struct {
     }
 
     pub fn deinit(self: Self) void {
-        if (librdkafka.rd_kafka_flush(self._producer, 10_000) != 0) {
+        if (librdkafka.rd_kafka_flush(self._producer, 60_000) != 0) {
             std.log.err("failed to flush messages", .{});
         }
         librdkafka.rd_kafka_topic_destroy(self._topic);
@@ -58,7 +62,7 @@ pub const Producer = struct {
     }
 
     // Wait for all messages to be sent.
-    pub fn wait(self: Self, interval: u16) void {
+    pub fn wait(self: Self, comptime interval: u16) void {
         while (librdkafka.rd_kafka_outq_len(self._producer) > 0) {
             _ = librdkafka.rd_kafka_poll(self._producer, interval);
         }
@@ -67,8 +71,8 @@ pub const Producer = struct {
 
 // TODO: mock it
 test "test get Producer Ok" {
-    var ConfigBuilder = kafka.ConfigBuilder.get();
-    const conf = ConfigBuilder
+    var config_builder = config.Builder.get();
+    const conf = config_builder
         .with("bootstrap.servers", "localhost:9092")
         .with("enable.idempotence", "true")
         .with("batch.num.messages", "10")
@@ -81,14 +85,14 @@ test "test get Producer Ok" {
         .build();
 
     const TestCbWrapper = struct {
-        fn onMessageSent(message: kafka.Message) void {
+        fn onMessageSent(message: Message) void {
             std.log.info("Message sent: {s}", .{message.getPayload()});
         }
     };
 
-    kafka.setCb(conf, TestCbWrapper.onMessageSent);
+    callback.set(conf, TestCbWrapper.onMessageSent);
 
-    var topic_config_builder = kafka.TopicBuilder.get();
+    var topic_config_builder = topic.Builder.get();
     const topic_conf = topic_config_builder
         .with("request.required.acks", "all")
         .build();

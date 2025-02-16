@@ -1,7 +1,7 @@
 ### Kafka.zig
 running examples
 
-1. Install C/C++ librdkafka as described [here](https://github.com/vspaz/kafka.zig?tab=readme-ov-file#dependencies) unless you have already done so.
+1. Install C/C++ librdkafka as described [here](https://github.com/vspaz/kafka.zig?tab=readme-ov-file#kafkazig) unless you have already done so.
 
 2. Clone repository
 ```shell

@@ -1,7 +1,8 @@
+const std = @import("std");
+
 const librdkafka = @cImport({
     @cInclude("librdkafka/rdkafka.h");
 });
-const std = @import("std");
 
 // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#global-configuration-properties
 pub const Builder = struct {
@@ -27,13 +28,12 @@ pub const Builder = struct {
         }
     }
 
-    pub fn with(self: Self, param: [*c]const u8, value: [*c]const u8) Self {
+    pub inline fn with(self: Self, param: [*c]const u8, value: [*c]const u8) Self {
         setConfigParameter(self, param, value);
         return self;
     }
 
-    pub fn build(self: Self) ?*librdkafka.struct_rd_kafka_conf_s {
-        std.log.info("config initialized", .{});
+    pub inline fn build(self: Self) ?*librdkafka.struct_rd_kafka_conf_s {
         return self._kafka_conf;
     }
 };

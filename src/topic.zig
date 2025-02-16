@@ -1,7 +1,8 @@
+const std = @import("std");
+
 const librdkafka = @cImport({
     @cInclude("librdkafka/rdkafka.h");
 });
-const std = @import("std");
 
 pub fn createTopic(producer: ?*librdkafka.rd_kafka_t, topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s, topic_name: [*]const u8) ?*librdkafka.struct_rd_kafka_topic_s {
     const kafka_topic: ?*librdkafka.struct_rd_kafka_topic_s = librdkafka.rd_kafka_topic_new(producer, topic_name, topic_conf);
@@ -35,12 +36,12 @@ pub const Builder = struct {
         }
     }
 
-    pub fn with(self: Self, param: [*c]const u8, value: [*c]const u8) Self {
+    pub inline fn with(self: Self, param: [*c]const u8, value: [*c]const u8) Self {
         setTopicConfigParam(self, param, value);
         return self;
     }
 
-    pub fn build(self: Self) ?*librdkafka.struct_rd_kafka_topic_conf_s {
+    pub inline fn build(self: Self) ?*librdkafka.struct_rd_kafka_topic_conf_s {
         return self._topic_conf;
     }
 };

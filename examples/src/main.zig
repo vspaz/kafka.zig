@@ -1,5 +1,6 @@
 // examples for documentation - file to be delted!
 const std = @import("std");
+
 const kafka = @import("kafka.zig");
 
 fn onMessageSent(message: kafka.Message) void {
