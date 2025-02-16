@@ -56,7 +56,7 @@ fn jsonProducer() !void {
     const topic_conf = topic_config_builder
         .with("acks", "all")
         .build();
-    kafka.callback.set(producer_conf, onMessageSent);
+    kafka.setCb(producer_conf, onMessageSent);
 
     const kafka_producer = kafka.Producer.init(producer_conf, topic_conf, "topic-name2");
     defer kafka_producer.deinit();

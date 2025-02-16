@@ -4,7 +4,7 @@ const librdkafka = @cImport({
 
 const kafka = @import("kafka.zig");
 
-pub fn set(conf: ?*librdkafka.struct_rd_kafka_conf_s, cb: fn (message: kafka.Message) void) void {
+pub fn setCb(conf: ?*librdkafka.struct_rd_kafka_conf_s, cb: fn (message: kafka.Message) void) void {
     const cABIWrapper = struct {
         pub fn callback(rk: ?*librdkafka.rd_kafka_t, rkmessage: [*c]const librdkafka.rd_kafka_message_t, _: ?*anyopaque) callconv(.C) void {
             _ = rk;
