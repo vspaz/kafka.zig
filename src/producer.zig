@@ -86,7 +86,7 @@ test "test get Producer Ok" {
         }
     };
 
-    kafka.setCallback(conf, TestCbWrapper.onMessageSent);
+    kafka.callback.set(conf, TestCbWrapper.onMessageSent);
 
     var topic_config_builder = kafka.TopicBuilder.get();
     const topic_conf = topic_config_builder

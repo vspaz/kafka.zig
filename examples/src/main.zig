@@ -2,6 +2,10 @@
 const std = @import("std");
 const kafka = @import("kafka.zig");
 
+fn onMessageSent(message: kafka.Message) void {
+    std.log.info("Message sent: {s}", .{message.getPayload()});
+}
+
 fn plainTextProducer() void {
     var producer_config_builder = kafka.ConfigBuilder.get();
     // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#global-configuration-properties
@@ -52,6 +56,7 @@ fn jsonProducer() !void {
     const topic_conf = topic_config_builder
         .with("acks", "all")
         .build();
+    kafka.callback.set(producer_conf, onMessageSent);
 
     const kafka_producer = kafka.Producer.init(producer_conf, topic_conf, "topic-name2");
     defer kafka_producer.deinit();
