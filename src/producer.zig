@@ -80,6 +80,14 @@ test "test get Producer Ok" {
         .with("batch.size", "16384")
         .build();
 
+    const TestCbWrapper = struct {
+        fn onMessageSent(message: kafka.Message) void {
+            std.log.info("Message sent: {s}", .{message.getPayload()});
+        }
+    };
+
+    kafka.setCallback(conf, TestCbWrapper.onMessageSent);
+
     var topic_config_builder = kafka.TopicBuilder.get();
     const topic_conf = topic_config_builder
         .with("request.required.acks", "all")
