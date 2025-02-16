@@ -262,3 +262,9 @@ TODO!: to be added
 
 ## Examples
 Please, refer to the examples [section](https://github.com/vspaz/kafka.zig/blob/main/examples/README.md).
+
+## Useful references
+
+- [Kafka global configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#global-configuration-properties)
+- [Topic configuration]( https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#topic-configuration-properties)
+- [Introduction to librdkafka](https://github.com/confluentinc/librdkafka/blob/master/INTRODUCTION.md).
