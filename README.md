@@ -184,6 +184,26 @@ pub fn main() !void {
 }
 ```
 
+### Callbacks
+
+If you wish to set a producer callback, you can do it with `kafka.setCb` as follows:
+```zig
+fn onMessageSent(message: kafka.Message) void {
+    std.log.info("Message sent: {s}", .{message.getPayload()});
+}
+
+fn producer() void {
+    var producer_config_builder = kafka.ConfigBuilder.get();
+    const producer_conf = producer_config_builder
+        .with("bootstrap.servers", "localhost:9092")
+        .build();
+    
+    kafka.setCb(producer_conf, onMessageSent);
+}
+```
+> [!NOTE] 
+> the callback is a part of producer configuration and should be set before producer is initialized!
+
 ### Consumer, consuming JSON or binary data.
 
 ```zig
