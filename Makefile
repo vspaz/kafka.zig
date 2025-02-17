@@ -8,7 +8,7 @@ run:
 
 .PHONY: test
 test:
-	zig test src/kafka.zig -lc -lrdkafka
+	zig test src/kafka.zig -lc -lrdkafka -freference-trace
 
 .PHONY: style-fix
 style-fix:

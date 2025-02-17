@@ -4,9 +4,9 @@ const librdkafka = @cImport({
     @cInclude("librdkafka/rdkafka.h");
 });
 
-const callback = @import("callback.zig");
 const config = @import("config.zig");
 const Message = @import("message.zig").Message;
+const Metadata = @import("metadata.zig").Metadata;
 const topic = @import("topic.zig");
 const utils = @import("utils.zig");
 
@@ -67,7 +67,26 @@ pub const Producer = struct {
             _ = librdkafka.rd_kafka_poll(self._producer, interval);
         }
     }
+
+    pub fn getMetadata(self: Self) Metadata {
+        var metadata: [*c]const librdkafka.struct_rd_kafka_metadata = undefined;
+        if (librdkafka.rd_kafka_metadata(self._producer, 0, self._topic, &metadata, 5000) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
+            std.log.err("Failed to fetch metadata: {s}", .{utils.getLastError()});
+        }
+        return .{ ._metadata = metadata };
+    }
 };
+
+pub fn setCb(conf: ?*librdkafka.struct_rd_kafka_conf_s, comptime cb: fn (message: Message) void) void {
+    const cbAdapter = struct {
+        fn callback(rk: ?*librdkafka.rd_kafka_t, rkmessage: [*c]const librdkafka.rd_kafka_message_t, _: ?*anyopaque) callconv(.C) void {
+            _ = rk;
+            var message = rkmessage.*;
+            cb(.{ ._message = &message });
+        }
+    };
+    librdkafka.rd_kafka_conf_set_dr_msg_cb(conf, cbAdapter.callback);
+}
 
 // TODO: mock it
 test "test get Producer Ok" {
@@ -90,7 +109,7 @@ test "test get Producer Ok" {
         }
     };
 
-    callback.set(conf, TestCbWrapper.onMessageSent);
+    setCb(conf, TestCbWrapper.onMessageSent);
 
     var topic_config_builder = topic.Builder.get();
     const topic_conf = topic_config_builder
@@ -98,6 +117,10 @@ test "test get Producer Ok" {
         .build();
 
     const kafka_producer = Producer.init(conf, topic_conf, "foobar-topic");
+    const meta = kafka_producer.getMetadata();
+    std.log.info("broker count: {d}", .{meta.getBrokerCount()});
+    _ = meta.getBrokers();
+    meta.deinit();
     std.debug.assert(@TypeOf(kafka_producer) == Producer);
     kafka_producer.deinit();
 }

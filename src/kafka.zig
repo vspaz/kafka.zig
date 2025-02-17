@@ -3,8 +3,9 @@ const std = @import("std");
 pub const ConfigBuilder = @import("config.zig").Builder;
 pub const Consumer = @import("consumer.zig").Consumer;
 pub const Message = @import("message.zig").Message;
-pub const Producer = @import("producer.zig").Producer;
-pub const setCb = @import("callback.zig").set;
+const producer = @import("producer.zig");
+pub const Producer = producer.Producer;
+pub const setCb = producer.setCb;
 pub const TopicBuilder = @import("topic.zig").Builder;
 
 test {
