@@ -70,7 +70,7 @@ pub const Producer = struct {
 
     pub fn getMetadata(self: Self) Metadata {
         var metadata: [*c]const librdkafka.struct_rd_kafka_metadata = undefined;
-        if (librdkafka.rd_kafka_metadata(self._producer, 0, self._topic, &metadata, 5000) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
+        if (librdkafka.rd_kafka_metadata(self._producer, 1, null, &metadata, 5000) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
             std.log.err("Failed to fetch metadata: {s}", .{utils.getLastError()});
         }
         return .{ ._metadata = metadata };
@@ -118,8 +118,8 @@ test "test get Producer Ok" {
 
     const kafka_producer = Producer.init(conf, topic_conf, "foobar-topic");
     const meta = kafka_producer.getMetadata();
-    std.log.info("broker count: {d}", .{meta.getBrokerCount()});
-    _ = meta.getBrokers();
+    std.log.info("broker count: {d}", .{meta.getBrokers().count});
+    std.log.info("topics count: {d}", .{meta.getTopics().count});
     meta.deinit();
     std.debug.assert(@TypeOf(kafka_producer) == Producer);
     kafka_producer.deinit();

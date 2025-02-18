@@ -126,6 +126,8 @@ test "test consumer init ok" {
         kafka_consumer.commitOffset(message);
     }
     const meta = kafka_consumer.getMetadata();
+    std.log.info("broker count: {d}", .{meta.getBrokers().count});
+    std.log.info("topics count: {d}", .{meta.getTopics().count});
     meta.deinit();
     kafka_consumer.unsubscribe();
     kafka_consumer.close();
