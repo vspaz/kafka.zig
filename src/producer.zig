@@ -6,7 +6,7 @@ const librdkafka = @cImport({
 
 const config = @import("config.zig");
 const Message = @import("message.zig").Message;
-const Metadata = @import("metadata.zig").Metadata;
+const m = @import("metadata.zig");
 const topic = @import("topic.zig");
 const utils = @import("utils.zig");
 
@@ -68,7 +68,7 @@ pub const Producer = struct {
         }
     }
 
-    pub fn getMetadata(self: Self) Metadata {
+    pub fn getMetadata(self: Self) m.Metadata {
         var metadata: [*c]const librdkafka.struct_rd_kafka_metadata = undefined;
         if (librdkafka.rd_kafka_metadata(self._producer, 1, null, &metadata, 5000) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
             std.log.err("Failed to fetch metadata: {s}", .{utils.getLastError()});
@@ -118,8 +118,22 @@ test "test get Producer Ok" {
 
     const kafka_producer = Producer.init(conf, topic_conf, "foobar-topic");
     const meta = kafka_producer.getMetadata();
-    std.log.info("broker count: {d}", .{meta.getBrokers().count});
-    std.log.info("topics count: {d}", .{meta.getTopics().count});
+    std.debug.assert(1 == meta.getBrokers().count);
+    std.debug.assert(3 == meta.getTopics().count);
+    const allocator = std.testing.allocator;
+    const brokers = try meta.getBrokers().toArray(allocator);
+    defer allocator.free(brokers);
+    std.debug.assert(std.mem.eql(u8, "localhost", brokers[0].host));
+    std.debug.assert(9092 == brokers[0].port);
+    std.debug.assert(1 == brokers[0].id);
+
+    const topics = try meta.getTopics().toArray(allocator);
+    std.log.info("topic name {s}", .{topics[0].name});
+    std.log.err("topic name {d}", .{topics[0].partitions[0].id});
+    std.debug.assert(std.mem.eql(u8, "topic-name2", topics[0].name));
+    for (topics) |t| allocator.free(t.partitions);
+
+    allocator.free(topics);
     meta.deinit();
     std.debug.assert(@TypeOf(kafka_producer) == Producer);
     kafka_producer.deinit();
