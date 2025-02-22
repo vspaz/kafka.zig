@@ -8,6 +8,7 @@ pub const Producer = producer.Producer;
 pub const setCb = producer.setCb;
 pub const TopicBuilder = @import("topic.zig").Builder;
 pub const metadata = @import("metadata.zig");
+pub const AdminApiClient = @import("admin.zig").ApiClient;
 
 test {
     std.testing.refAllDecls(@This());

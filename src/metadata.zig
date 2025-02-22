@@ -23,7 +23,7 @@ pub const BrokerMetadata = struct {
     count: usize,
     brokers: [*c]librdkafka.struct_rd_kafka_metadata_broker,
 
-    pub fn toArray(self: Self, allocator: std.mem.Allocator) ![]Broker {
+    fn toArray(self: Self, allocator: std.mem.Allocator) ![]Broker {
         var brokers: []Broker = try allocator.alloc(Broker, self.count);
         for (0..self.count) |i| {
             brokers[i] = Broker.init(self.brokers[i]);
@@ -75,7 +75,7 @@ pub const TopicMetadata = struct {
     count: usize,
     topics: [*c]librdkafka.struct_rd_kafka_metadata_topic,
 
-    pub fn toArray(self: Self, allocator: std.mem.Allocator) ![]Topic {
+    fn toArray(self: Self, allocator: std.mem.Allocator) ![]Topic {
         var topics: []Topic = try allocator.alloc(Topic, self.count);
         for (0..self.count) |i| {
             topics[i] = try Topic.init(self.topics[i], allocator);
@@ -86,23 +86,41 @@ pub const TopicMetadata = struct {
 
 pub const Metadata = struct {
     const Self = @This();
+    _allocator: std.mem.Allocator,
     _metadata: [*c]const librdkafka.struct_rd_kafka_metadata,
+    _topics: []Topic,
+    _brokers: []Broker,
+
+    pub fn init(allocator: std.mem.Allocator, metadata: [*c]const librdkafka.struct_rd_kafka_metadata) !Metadata {
+        const broker_metadata = BrokerMetadata{
+            .count = @intCast(metadata.*.broker_cnt),
+            .brokers = metadata.*.brokers,
+        };
+
+        const brokers = try broker_metadata.toArray(allocator);
+
+        const topic_metadata = TopicMetadata{
+            .count = @intCast(metadata.*.topic_cnt),
+            .topics = metadata.*.topics,
+        };
+
+        const topics = try topic_metadata.toArray(allocator);
+
+        return .{ ._allocator = allocator, ._metadata = metadata, ._brokers = brokers, ._topics = topics };
+    }
 
     pub fn deinit(self: Self) void {
+        for (self._topics) |topic| self._allocator.free(topic.partitions);
+        self._allocator.free(self._topics);
+        self._allocator.free(self._brokers);
         librdkafka.rd_kafka_metadata_destroy(self._metadata);
     }
 
-    pub fn getBrokers(self: Self) BrokerMetadata {
-        return .{
-            .count = @intCast(self._metadata.*.broker_cnt),
-            .brokers = self._metadata.*.brokers,
-        };
+    pub fn listTopics(self: Self) []Topic {
+        return self._topics;
     }
 
-    pub fn getTopics(self: Self) TopicMetadata {
-        return .{
-            .count = @intCast(self._metadata.*.topic_cnt),
-            .topics = self._metadata.*.topics,
-        };
+    pub fn listBrokers(self: Self) []Broker {
+        return self._brokers;
     }
 };

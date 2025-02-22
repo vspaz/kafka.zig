@@ -6,7 +6,6 @@ const librdkafka = @cImport({
 
 const config = @import("config.zig");
 const Message = @import("message.zig").Message;
-const Metadata = @import("metadata.zig").Metadata;
 const utils = @import("utils.zig");
 
 pub const Consumer = struct {
@@ -94,14 +93,6 @@ pub const Consumer = struct {
         }
         std.log.info("Consumer closed successfully.", .{});
     }
-
-    pub fn getMetadata(self: Self) Metadata {
-        var metadata: [*c]const librdkafka.struct_rd_kafka_metadata = undefined;
-        if (librdkafka.rd_kafka_metadata(self._consumer, 1, null, &metadata, 5000) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
-            std.log.err("Failed to fetch metadata: {s}", .{utils.getLastError()});
-        }
-        return .{ ._metadata = metadata };
-    }
 };
 
 // TODO: mock it
@@ -125,10 +116,6 @@ test "test consumer init ok" {
         _ = message.getPayload();
         kafka_consumer.commitOffset(message);
     }
-    const meta = kafka_consumer.getMetadata();
-    std.log.info("broker count: {d}", .{meta.getBrokers().count});
-    std.log.info("topics count: {d}", .{meta.getTopics().count});
-    meta.deinit();
     kafka_consumer.unsubscribe();
     kafka_consumer.close();
 }
