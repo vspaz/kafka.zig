@@ -18,7 +18,7 @@ pub const Broker = struct {
     }
 };
 
-pub const BrokerMetadata = struct {
+const BrokerMetadata = struct {
     const Self = @This();
     count: usize,
     brokers: [*c]librdkafka.struct_rd_kafka_metadata_broker,
@@ -70,7 +70,7 @@ pub const Topic = struct {
     }
 };
 
-pub const TopicMetadata = struct {
+const TopicMetadata = struct {
     const Self = @This();
     count: usize,
     topics: [*c]librdkafka.struct_rd_kafka_metadata_topic,
@@ -120,7 +120,25 @@ pub const Metadata = struct {
         return self._topics;
     }
 
+    pub fn describeTopic(self: Self, topic_name: []const u8) ?Topic {
+        for (self._topics) |topic| {
+            if (std.mem.eql(u8, topic_name, topic.name)) {
+                return topic;
+            }
+        }
+        return null;
+    }
+
     pub fn listBrokers(self: Self) []Broker {
         return self._brokers;
+    }
+
+    pub fn describeBroker(self: Self, broker_host: []const u8) ?Broker {
+        for (self._brokers) |broker| {
+            if (std.mem.eql(u8, broker_host, broker.host)) {
+                return broker;
+            }
+        }
+        return null;
     }
 };

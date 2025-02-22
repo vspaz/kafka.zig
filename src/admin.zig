@@ -14,8 +14,7 @@ pub const ApiClient = struct {
     _producer: ?*librdkafka.rd_kafka_t,
 
     pub fn init(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s) Self {
-        const kafka_producer = producer.Producer.createKafkaProducer(kafka_conf);
-        return Self{ ._producer = kafka_producer };
+        return Self{ ._producer = producer.Producer.createKafkaProducer(kafka_conf) };
     }
 
     pub fn deinit(self: Self) void {
@@ -60,7 +59,6 @@ test "test Metadata.listBrokers Ok" {
     const brokers = meta.listBrokers();
     std.debug.assert(std.mem.eql(u8, "localhost", brokers[0].host));
     std.debug.assert(1 == brokers.len);
-    std.debug.assert(std.mem.eql(u8, "localhost", brokers[0].host));
     std.debug.assert(9092 == brokers[0].port);
     std.debug.assert(1 == brokers[0].id);
 }
@@ -82,5 +80,51 @@ test "test Metadata.listTopics Ok" {
     std.debug.assert(3 == topics.len);
     std.debug.assert(std.mem.eql(u8, "topic-name2", topics[0].name));
     std.debug.assert(0 == topics[0].partitions[0].id);
-    std.debug.assert(std.mem.eql(u8, "topic-name2", topics[0].name));
+}
+
+// TODO: mock it
+test "test Metadata.describeTopic Ok" {
+    var config_builder = config.Builder.get();
+    const conf = config_builder
+    .with("bootstrap.servers", "localhost:9092")
+    .build();
+
+    const api_client = ApiClient.init(conf);
+    defer api_client.deinit();
+
+    const allocator = std.testing.allocator;
+    var meta = try api_client.getMetadata(allocator);
+    defer meta.deinit();
+    const topic_name = "topic-name2";
+    const topic_or_null = meta.describeTopic(topic_name);
+    if (topic_or_null)|topic| {
+        std.debug.assert(std.mem.eql(u8, topic_name, topic.name));
+        std.debug.assert(0 == topic.partitions[0].id);
+    } else {
+        std.log.err("topic {s} not found.", .{topic_name});
+    }
+}
+
+// TODO: mock it
+test "test Metadata.describeBroker Ok" {
+    var config_builder = config.Builder.get();
+    const conf = config_builder
+    .with("bootstrap.servers", "localhost:9092")
+    .build();
+
+    const api_client = ApiClient.init(conf);
+    defer api_client.deinit();
+
+    const allocator = std.testing.allocator;
+    var meta = try api_client.getMetadata(allocator);
+    defer meta.deinit();
+    const host = "localhost";
+    const broker_or_null = meta.describeBroker(host);
+    if (broker_or_null)|broker| {
+        std.debug.assert(std.mem.eql(u8, host, broker.host));
+        std.debug.assert(9092 == broker.port);
+        std.debug.assert(1 == broker.id);
+    } else {
+        std.log.err("broker {s} not found", .{host});
+    }
 }

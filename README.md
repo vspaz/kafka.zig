@@ -257,7 +257,7 @@ pub fn main() !void {
     consumer_worker.join();
 }
 ```
-## Metadata
+## AdminApiClient & Metadata
 TODO!: to be added
 
 ## Examples
