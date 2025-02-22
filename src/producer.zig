@@ -6,7 +6,6 @@ const librdkafka = @cImport({
 
 const config = @import("config.zig");
 const Message = @import("message.zig").Message;
-const Metadata = @import("metadata.zig").Metadata;
 const topic = @import("topic.zig");
 const utils = @import("utils.zig");
 
@@ -15,7 +14,7 @@ pub const Producer = struct {
     _producer: ?*librdkafka.rd_kafka_t,
     _topic: ?*librdkafka.struct_rd_kafka_topic_s,
 
-    fn createKafkaProducer(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s) ?*librdkafka.rd_kafka_t {
+    pub fn createKafkaProducer(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s) ?*librdkafka.rd_kafka_t {
         var error_message: [512]u8 = undefined;
         const kafka_producer: ?*librdkafka.rd_kafka_t = librdkafka.rd_kafka_new(librdkafka.RD_KAFKA_PRODUCER, kafka_conf, &error_message, error_message.len);
         if (kafka_producer == null) {
@@ -67,14 +66,6 @@ pub const Producer = struct {
             _ = librdkafka.rd_kafka_poll(self._producer, interval);
         }
     }
-
-    pub fn getMetadata(self: Self) Metadata {
-        var metadata: [*c]const librdkafka.struct_rd_kafka_metadata = undefined;
-        if (librdkafka.rd_kafka_metadata(self._producer, 1, null, &metadata, 5000) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
-            std.log.err("Failed to fetch metadata: {s}", .{utils.getLastError()});
-        }
-        return .{ ._metadata = metadata };
-    }
 };
 
 pub fn setCb(conf: ?*librdkafka.struct_rd_kafka_conf_s, comptime cb: fn (message: Message) void) void {
@@ -117,10 +108,6 @@ test "test get Producer Ok" {
         .build();
 
     const kafka_producer = Producer.init(conf, topic_conf, "foobar-topic");
-    const meta = kafka_producer.getMetadata();
-    std.log.info("broker count: {d}", .{meta.getBrokers().count});
-    std.log.info("topics count: {d}", .{meta.getTopics().count});
-    meta.deinit();
     std.debug.assert(@TypeOf(kafka_producer) == Producer);
     kafka_producer.deinit();
 }
