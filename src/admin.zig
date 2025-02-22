@@ -86,8 +86,13 @@ test "test Metadata.listTopics Ok" {
 test "test Metadata.describeTopic Ok" {
     var config_builder = config.Builder.get();
     const conf = config_builder
+<<<<<<< Updated upstream
     .with("bootstrap.servers", "localhost:9092")
     .build();
+=======
+        .with("bootstrap.servers", "localhost:9092")
+        .build();
+>>>>>>> Stashed changes
 
     const api_client = ApiClient.init(conf);
     defer api_client.deinit();
@@ -97,7 +102,11 @@ test "test Metadata.describeTopic Ok" {
     defer meta.deinit();
     const topic_name = "topic-name2";
     const topic_or_null = meta.describeTopic(topic_name);
+<<<<<<< Updated upstream
     if (topic_or_null)|topic| {
+=======
+    if (topic_or_null) |topic| {
+>>>>>>> Stashed changes
         std.debug.assert(std.mem.eql(u8, topic_name, topic.name));
         std.debug.assert(0 == topic.partitions[0].id);
     } else {
@@ -109,8 +118,13 @@ test "test Metadata.describeTopic Ok" {
 test "test Metadata.describeBroker Ok" {
     var config_builder = config.Builder.get();
     const conf = config_builder
+<<<<<<< Updated upstream
     .with("bootstrap.servers", "localhost:9092")
     .build();
+=======
+        .with("bootstrap.servers", "localhost:9092")
+        .build();
+>>>>>>> Stashed changes
 
     const api_client = ApiClient.init(conf);
     defer api_client.deinit();
@@ -120,11 +134,19 @@ test "test Metadata.describeBroker Ok" {
     defer meta.deinit();
     const host = "localhost";
     const broker_or_null = meta.describeBroker(host);
+<<<<<<< Updated upstream
     if (broker_or_null)|broker| {
+=======
+    if (broker_or_null) |broker| {
+>>>>>>> Stashed changes
         std.debug.assert(std.mem.eql(u8, host, broker.host));
         std.debug.assert(9092 == broker.port);
         std.debug.assert(1 == broker.id);
     } else {
         std.log.err("broker {s} not found", .{host});
     }
+<<<<<<< Updated upstream
 }
+=======
+}
+>>>>>>> Stashed changes
