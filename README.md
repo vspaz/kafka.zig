@@ -258,7 +258,8 @@ pub fn main() !void {
 }
 ```
 ## AdminApiClient
-### List Topics
+### Topics
+#### List topics
 ```zig
 const std = @import("std");
 const kafka = @import("kafka.zig");
@@ -286,7 +287,7 @@ pub fn listTopics() !void {
 }
 ```
 
-### Describe Topic
+#### Describe a topic
 
 ```zig
 const std = @import("std");
@@ -312,6 +313,68 @@ pub fn describeTopic() !void {
         std.log.info("topic name {s}", .{topic.name});
         std.log.info("topic partition count {d}", .{topic.partitions.len});
         std.log.info("topic partition id {d}", .{topic.partitions[0].id});
+    }
+}
+```
+#### Brokers
+#### List brokers
+```zig
+const std = @import("std");
+const kafka = @import("kafka.zig");
+
+pub fn listBrokers() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer _ = gpa.deinit();
+
+    var config_builder = kafka.ConfigBuilder.get();
+    const conf = config_builder
+        .with("bootstrap.servers", "localhost:9092")
+        .build();
+
+    const api_client = kafka.AdminApiClient.init(conf);
+    defer api_client.deinit();
+
+    var meta = try api_client.getMetadata(allocator);
+    defer meta.deinit();
+
+    const brokers = meta.listBrokers();
+    std.log.info("brokers count: {d}", .{brokers.len});
+    std.log.info("host: {s}", .{brokers[0].host});
+    std.log.info("port: {d}", .{brokers[0].port});
+    std.log.info("brokers id: {d}", .{brokers[0].id});
+}
+```
+#### Describe a broker
+
+```zig
+const std = @import("std");
+const kafka = @import("kafka.zig");
+
+pub fn describeBroker() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer _ = gpa.deinit();
+
+    var config_builder = kafka.ConfigBuilder.get();
+    const conf = config_builder
+    .with("bootstrap.servers", "localhost:9092")
+    .build();
+
+    const api_client = kafka.AdminApiClient.init(conf);
+    defer api_client.deinit();
+
+    var meta = try api_client.getMetadata(allocator);
+    defer meta.deinit();
+
+    const host = "localhost";
+    const broker_or_null = meta.describeBroker(host);
+    if (broker_or_null) |broker| {
+        std.log.info("host: {s}", .{broker.host});
+        std.log.info("port: {d}", .{broker.port});
+        std.log.info("brokers id: {d}", .{broker.id});
+    } else {
+        std.log.err("broker {s} not found", .{host});
     }
 }
 ```
