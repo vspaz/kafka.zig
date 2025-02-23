@@ -358,8 +358,8 @@ pub fn describeBroker() !void {
 
     var config_builder = kafka.ConfigBuilder.get();
     const conf = config_builder
-    .with("bootstrap.servers", "localhost:9092")
-    .build();
+        .with("bootstrap.servers", "localhost:9092")
+        .build();
 
     const api_client = kafka.AdminApiClient.init(conf);
     defer api_client.deinit();
