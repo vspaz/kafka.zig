@@ -257,8 +257,64 @@ pub fn main() !void {
     consumer_worker.join();
 }
 ```
-## AdminApiClient & Metadata
-TODO!: to be added
+## AdminApiClient
+### List Topics
+```zig
+const std = @import("std");
+const kafka = @import("kafka.zig");
+
+pub fn listTopics() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer _ = gpa.deinit();
+
+    var config_builder = kafka.ConfigBuilder.get();
+    const conf = config_builder
+        .with("bootstrap.servers", "localhost:9092")
+        .build();
+
+    const api_client = kafka.AdminApiClient.init(conf);
+    defer api_client.deinit();
+
+    var meta = try api_client.getMetadata(allocator);
+    defer meta.deinit();
+    const topics = meta.listTopics();
+    std.log.info("topics count {d}", .{topics.len});
+    std.log.info("topic name {s}", .{topics[0].name});
+    std.log.info("topic partition count {d}", .{topics[0].partitions.len});
+    std.log.info("topic partition id {d}", .{topics[0].partitions[0].id});
+}
+```
+
+### Describe Topic
+
+```zig
+const std = @import("std");
+const kafka = @import("kafka.zig");
+
+pub fn describeTopic() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer _ = gpa.deinit();
+
+    var config_builder = kafka.ConfigBuilder.get();
+    const conf = config_builder
+        .with("bootstrap.servers", "localhost:9092")
+        .build();
+
+    const api_client = kafka.AdminApiClient.init(conf);
+    defer api_client.deinit();
+
+    var meta = try api_client.getMetadata(allocator);
+    defer meta.deinit();
+    const topic_or_null = meta.describeTopic("topic-name2");
+    if (topic_or_null) |topic| {
+        std.log.info("topic name {s}", .{topic.name});
+        std.log.info("topic partition count {d}", .{topic.partitions.len});
+        std.log.info("topic partition id {d}", .{topic.partitions[0].id});
+    }
+}
+```
 
 ## Examples
 Please, refer to the examples [section](https://github.com/vspaz/kafka.zig/blob/main/examples/README.md).
