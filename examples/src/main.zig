@@ -119,8 +119,110 @@ fn jsonConsumer() !void {
     kafka_consumer.close();
 }
 
+pub fn listTopics() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer _ = gpa.deinit();
+
+    var config_builder = kafka.ConfigBuilder.get();
+    const conf = config_builder
+        .with("bootstrap.servers", "localhost:9092")
+        .build();
+
+    const api_client = kafka.AdminApiClient.init(conf);
+    defer api_client.deinit();
+
+    var meta = try api_client.getMetadata(allocator);
+    defer meta.deinit();
+    const topics = meta.listTopics();
+    std.log.info("topics count: {d}", .{topics.len});
+    std.log.info("topic name: {s}", .{topics[0].name});
+    std.log.info("topic partition count: {d}", .{topics[0].partitions.len});
+    std.log.info("topic partition id: {d}", .{topics[0].partitions[0].id});
+}
+
+pub fn describeTopic() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer _ = gpa.deinit();
+
+    var config_builder = kafka.ConfigBuilder.get();
+    const conf = config_builder
+        .with("bootstrap.servers", "localhost:9092")
+        .build();
+
+    const api_client = kafka.AdminApiClient.init(conf);
+    defer api_client.deinit();
+
+    var meta = try api_client.getMetadata(allocator);
+    defer meta.deinit();
+    const topic_or_null = meta.describeTopic("topic-name2");
+    if (topic_or_null) |topic| {
+        std.log.info("topic name: {s}", .{topic.name});
+        std.log.info("topic partition count: {d}", .{topic.partitions.len});
+        std.log.info("topic partition id: {d}", .{topic.partitions[0].id});
+    }
+}
+
+pub fn listBrokers() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer _ = gpa.deinit();
+
+    var config_builder = kafka.ConfigBuilder.get();
+    const conf = config_builder
+        .with("bootstrap.servers", "localhost:9092")
+        .build();
+
+    const api_client = kafka.AdminApiClient.init(conf);
+    defer api_client.deinit();
+
+    var meta = try api_client.getMetadata(allocator);
+    defer meta.deinit();
+
+    const brokers = meta.listBrokers();
+    std.log.info("brokers count: {d}", .{brokers.len});
+    std.log.info("host: {s}", .{brokers[0].host});
+    std.log.info("port: {d}", .{brokers[0].port});
+    std.log.info("brokers id: {d}", .{brokers[0].id});
+}
+
+pub fn describeBroker() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer _ = gpa.deinit();
+
+    var config_builder = kafka.ConfigBuilder.get();
+    const conf = config_builder
+        .with("bootstrap.servers", "localhost:9092")
+        .build();
+
+    const api_client = kafka.AdminApiClient.init(conf);
+    defer api_client.deinit();
+
+    var meta = try api_client.getMetadata(allocator);
+    defer meta.deinit();
+
+    const host = "localhost";
+    const broker_or_null = meta.describeBroker(host);
+    if (broker_or_null) |broker| {
+        std.log.info("host: {s}", .{broker.host});
+        std.log.info("port: {d}", .{broker.port});
+        std.log.info("brokers id: {d}", .{broker.id});
+    } else {
+        std.log.err("broker {s} not found", .{host});
+    }
+}
+
 pub fn main() !void {
-    // plainTextProducer();
+    //plainTextProducer();
+    // Admin Api
+    try listTopics();
+    try describeTopic();
+    try listBrokers();
+    try describeBroker();
+
+    // Producers & Consumers
     const producer_worker = try std.Thread.spawn(.{}, jsonProducer, .{});
     const consumer_worker = try std.Thread.spawn(.{}, jsonConsumer, .{});
     producer_worker.join();
