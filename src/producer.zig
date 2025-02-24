@@ -70,13 +70,21 @@ pub const Producer = struct {
 
 pub fn setCb(conf: ?*librdkafka.struct_rd_kafka_conf_s, comptime cb: fn (message: Message) void) void {
     const cbAdapter = struct {
-        fn callback(rk: ?*librdkafka.rd_kafka_t, rkmessage: [*c]const librdkafka.rd_kafka_message_t, _: ?*anyopaque) callconv(.C) void {
-            _ = rk;
+        fn callback(_: ?*librdkafka.rd_kafka_t, rkmessage: [*c]const librdkafka.rd_kafka_message_t, _: ?*anyopaque) callconv(.C) void {
             var message = rkmessage.*;
             cb(.{ ._message = &message });
         }
     };
     librdkafka.rd_kafka_conf_set_dr_msg_cb(conf, cbAdapter.callback);
+}
+
+pub fn setErrCb(conf: ?*librdkafka.struct_rd_kafka_conf_s, comptime cb: fn (err: i32, reason: [*c]const u8) void) void {
+    const errCbAdapter = struct {
+        fn callback(_: ?*librdkafka.rd_kafka_t, err: c_int, reason: [*c]const u8, _: ?*anyopaque) callconv(.C) void {
+            cb(err, reason);
+        }
+    };
+    librdkafka.rd_kafka_conf_set_error_cb(conf, errCbAdapter.callback);
 }
 
 // TODO: mock it
@@ -101,6 +109,14 @@ test "test get Producer Ok" {
     };
 
     setCb(conf, TestCbWrapper.onMessageSent);
+
+    const TestErrCbWrapper = struct {
+        fn onError(err: i32, reason: [*c]const u8) void {
+            std.log.err("error code {d}; error reason {s}", .{ err, reason });
+        }
+    };
+
+    setErrCb(conf, TestErrCbWrapper.onError);
 
     var topic_config_builder = topic.Builder.get();
     const topic_conf = topic_config_builder
