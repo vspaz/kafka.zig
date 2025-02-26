@@ -178,12 +178,16 @@ pub fn main() !void {
 }
 ```
 ### Callbacks
-If you wish to set a producer callback, you can do it with `kafka.setCb` as follows:
+If you wish to set a producer callback, you can do it with `kafka.setCb` or `kafka.setErrCb` as follows:
 ```zig
 const kafka = @import("kafka.zig");
 
 fn onMessageSent(message: kafka.Message) void {
     std.log.info("Message sent: {s}", .{message.getPayload()});
+}
+
+fn onError(err: i32, reason: [*c]const u8) void {
+    std.log.err("error code: {d}; error message: {s}.", .{err, reason});
 }
 
 fn producer() void {
@@ -193,6 +197,7 @@ fn producer() void {
         .build();
     
     kafka.setCb(producer_conf, onMessageSent);
+    kafka.setErrCb(producer_conf, onError);
 }
 ```
 > [!NOTE] 
