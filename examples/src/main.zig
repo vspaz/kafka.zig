@@ -62,7 +62,7 @@ fn jsonProducer() !void {
         .with("acks", "all")
         .build();
     kafka.setCb(producer_conf, onMessageSent);
-    kafka.setErr(producer_conf, onError);
+    kafka.setErrCb(producer_conf, onError);
 
     const kafka_producer = kafka.Producer.init(producer_conf, topic_conf, "topic-name2");
     defer kafka_producer.deinit();
