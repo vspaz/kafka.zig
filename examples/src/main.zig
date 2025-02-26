@@ -7,6 +7,10 @@ fn onMessageSent(message: kafka.Message) void {
     std.log.info("Message sent: {s}", .{message.getPayload()});
 }
 
+fn onError(err: i32, reason: [*c]const u8) void {
+    std.log.err("error code: {d}; error message: {s}.", .{err, reason});
+}
+
 fn plainTextProducer() void {
     var producer_config_builder = kafka.ConfigBuilder.get();
     // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#global-configuration-properties
@@ -58,6 +62,7 @@ fn jsonProducer() !void {
         .with("acks", "all")
         .build();
     kafka.setCb(producer_conf, onMessageSent);
+    kafka.setErrCb(producer_conf, onError);
 
     const kafka_producer = kafka.Producer.init(producer_conf, topic_conf, "topic-name2");
     defer kafka_producer.deinit();
