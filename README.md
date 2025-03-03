@@ -22,7 +22,7 @@ brew install librdkafka
 ```
 2. Run the following command inside your project:
 ```shell
- zig fetch --save git+https://github.com/vspaz/kafka.zig.git#main
+zig fetch --save git+https://github.com/vspaz/kafka.zig.git#main
 ```
 it should add the following dependency to your project _build.zig.zon_ file, e.g.
 ```zig
@@ -49,7 +49,7 @@ it should add the following dependency to your project _build.zig.zon_ file, e.g
 ```
 4. Test the project build with `zig build`
 There should be no error!
-5. Import `kafka.zig` in your code as:
+5. Import `kafka.zig` client lib in your code as follows:
 ```zig
 const kafka = @import("kafka");
 ```
@@ -134,6 +134,7 @@ pub fn main() !void {
 An example of a **Kafka Zig** producer, producing JSON or binary data.
 ```zig
 const std = @import("std");
+
 const kafka = @import("kafka");
 
 fn jsonProducer() !void {
@@ -206,6 +207,7 @@ fn producer() void {
 An example of a **Zig Kafka** consumer, consuming JSON or binary data.
 ```zig
 const std = @import("std");
+
 const kafka = @import("kafka");
 
 const Data = struct { key1: u32, key2: []u8 };
@@ -267,6 +269,7 @@ pub fn main() !void {
 #### List topics
 ```zig
 const std = @import("std");
+
 const kafka = @import("kafka");
 
 pub fn listTopics() !void {
