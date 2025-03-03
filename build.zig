@@ -5,7 +5,7 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{ .preferred_optimize_mode = .ReleaseFast });
 
     const lib = b.addStaticLibrary(.{
-        .name = "kafka.zig",
+        .name = "kafka",
         .root_source_file = b.path("src/kafka.zig"),
         .target = target,
         .optimize = optimize,
@@ -13,13 +13,13 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(lib);
 
-    const kafkazig = b.addModule("kafka.zig", .{
+    const kafkazig = b.addModule("kafka", .{
         .root_source_file = b.path("src/kafka.zig"),
         .link_libc = true,
     });
 
     const exe = b.addExecutable(.{
-        .name = "kafka.zig",
+        .name = "kafka",
         .root_source_file = b.path("src/kafka.zig"),
         .target = target,
         .optimize = optimize,
