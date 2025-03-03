@@ -42,16 +42,16 @@ it should add the following dependency to your project _build.zig.zon_ file, e.g
         .optimize = optimize,
     });
     
-    // add these 3 lines! 
+    // add these 3 lines!
     const kafkazig = b.dependency("kafka.zig", .{});
-    exe.root_module.addImport("kafka.zig", kafkazig.module("kafka.zig"));
+    exe.root_module.addImport("kafka", kafkazig.module("kafka.zig"));
     exe.linkSystemLibrary("rdkafka");
 ```
 4. Test the project build with `zig build`
 There should be no error!
 5. Import `kafka.zig` in your code as:
 ```zig
-const kafka = @import("kafka.zig");
+const kafka = @import("kafka");
 ```
 and you're good to go! :rocket:
 ## Configuration
@@ -59,7 +59,7 @@ and you're good to go! :rocket:
 Configuration parameters can be set via `kafka.ConfigBuilder`
 An example of using `kafka.ConfigBuilder`
 ```zig
-const kafka = @import("kafka.zig");
+const kafka = @import("kafka");
 
 pub fn main() !void {
     var producer_config_builder = kafka.ConfigBuilder.get();
@@ -98,7 +98,7 @@ pub fn main() !void {
 ## Producers
 A simple Zig Apache Kafka producer sending plain text data.
 ```zig
-const kafka = @import("kafka.zig");
+const kafka = @import("kafka");
 
 fn plainTextProducer() void {
     var producer_config_builder = kafka.ConfigBuilder.get();
@@ -134,7 +134,7 @@ pub fn main() !void {
 An example of a **Kafka Zig** producer, producing JSON or binary data.
 ```zig
 const std = @import("std");
-const kafka = @import("kafka.zig");
+const kafka = @import("kafka");
 
 fn jsonProducer() !void {
     var producer_config_builder = kafka.ConfigBuilder.get();
@@ -180,7 +180,7 @@ pub fn main() !void {
 ### Callbacks
 If you wish to set a producer callback, you can do it with `kafka.setCb` or `kafka.setErrCb` as follows:
 ```zig
-const kafka = @import("kafka.zig");
+const kafka = @import("kafka");
 
 fn onMessageSent(message: kafka.Message) void {
     std.log.info("Message sent: {s}", .{message.getPayload()});
@@ -206,7 +206,7 @@ fn producer() void {
 An example of a **Zig Kafka** consumer, consuming JSON or binary data.
 ```zig
 const std = @import("std");
-const kafka = @import("kafka.zig");
+const kafka = @import("kafka");
 
 const Data = struct { key1: u32, key2: []u8 };
 
@@ -267,7 +267,7 @@ pub fn main() !void {
 #### List topics
 ```zig
 const std = @import("std");
-const kafka = @import("kafka.zig");
+const kafka = @import("kafka");
 
 pub fn listTopics() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -296,7 +296,8 @@ pub fn listTopics() !void {
 
 ```zig
 const std = @import("std");
-const kafka = @import("kafka.zig");
+
+const kafka = @import("kafka");
 
 pub fn describeTopic() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -325,7 +326,8 @@ pub fn describeTopic() !void {
 #### List brokers
 ```zig
 const std = @import("std");
-const kafka = @import("kafka.zig");
+
+const kafka = @import("kafka");
 
 pub fn listBrokers() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -354,7 +356,8 @@ pub fn listBrokers() !void {
 
 ```zig
 const std = @import("std");
-const kafka = @import("kafka.zig");
+
+const kafka = @import("kafka");
 
 pub fn describeBroker() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};

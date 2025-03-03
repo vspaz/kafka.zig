@@ -27,6 +27,10 @@
             .url = "git+https://github.com/vspaz/kafka.zig.git?ref=main#349cb1e2ad7638b40d189f9d5e1e8e240efa470d",
             .hash = "1220bfea95815e5fd0e9336c5d0487863f9f9102e9a5eae13429cdcf57f1b25021ff",
         },
+        .kafka = .{
+            .url = "git+https://github.com/vspaz/kafka.zig.git?ref=improve-build-and-lib-import#fe410234b8d8f9e9fc20a32af2200ef38af021dd",
+            .hash = "122048085f54bb6c7b44a5efbfbed2a07142c6eb9704cf60a2f947ffa276b3c160cd",
+        },
     },
     .paths = .{
         "build.zig",

@@ -1,14 +1,14 @@
 // examples for documentation - file to be delted!
 const std = @import("std");
 
-const kafka = @import("kafka.zig");
+const kafka = @import("kafka");
 
 fn onMessageSent(message: kafka.Message) void {
     std.log.info("Message sent: {s}", .{message.getPayload()});
 }
 
 fn onError(err: i32, reason: [*c]const u8) void {
-    std.log.err("error code: {d}; error message: {s}.", .{err, reason});
+    std.log.err("error code: {d}; error message: {s}.", .{ err, reason });
 }
 
 fn plainTextProducer() void {
