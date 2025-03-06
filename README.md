@@ -28,10 +28,10 @@ it should add the following dependency to your project _build.zig.zon_ file, e.g
 ```zig
 .dependencies = .{
     .kafka = .{
-        .url = "git+https://github.com/vspaz/kafka.zig.git?ref=upgrade-to-zig-014#cb45eb6daea091732b51b5e4bbf75ce4ec18c2e7",
-        .hash = "kafka-0.7.0-B87dFgemAADy9tRkT-STJv1jMqfOjhIydW4PiIRwCfdp",
+        .url = "git+https://github.com/vspaz/kafka.zig.git?ref=main#402ef4da4b79f46f23a1293eea9b13c11d754272",
+        .hash = "kafka-0.7.0-B87dFvulAACRnv8FlqZuBKKerKC14TtV09AGxIaZJVc3",
     },
-},
+}
 ```
 3. Navigate to _build.zig_ file located in the root directory and add the following 3 lines as shown below:
 ```zig
