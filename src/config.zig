@@ -9,21 +9,23 @@ pub const Builder = struct {
     const Self = @This();
     _kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s,
 
-    pub fn get() Self {
+    pub inline fn get() Self {
         return Self{ ._kafka_conf = getProducerConf() };
     }
 
-    fn getProducerConf() ?*librdkafka.struct_rd_kafka_conf_s {
+    inline fn getProducerConf() ?*librdkafka.struct_rd_kafka_conf_s {
         const producer_conf: ?*librdkafka.struct_rd_kafka_conf_s = librdkafka.rd_kafka_conf_new();
         if (producer_conf == null) {
+            @branchHint(.unlikely);
             @panic("failed to create config");
         }
         return producer_conf;
     }
 
-    fn setConfigParameter(self: Self, param: [*c]const u8, value: [*c]const u8) void {
+    inline fn setConfigParameter(self: Self, param: [*c]const u8, value: [*c]const u8) void {
         var error_message: [512]u8 = undefined;
         if (librdkafka.rd_kafka_conf_set(self._kafka_conf, param, value, &error_message, error_message.len) != librdkafka.RD_KAFKA_CONF_OK) {
+            @branchHint(.unlikely);
             @panic(&error_message);
         }
     }

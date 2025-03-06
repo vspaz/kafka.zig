@@ -62,6 +62,7 @@ pub const Consumer = struct {
     pub fn commitOffset(self: Self, message: Message) void {
         const err = librdkafka.rd_kafka_commit_message(self._consumer, message._message, 1);
         if (err != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
+            @branchHint(.unlikely);
             std.log.err("failed to commit offset {s}", .{utils.getLastError()});
             return;
         }
@@ -72,6 +73,7 @@ pub const Consumer = struct {
         if (self._message_count % count == 0) {
             const offset: c_int = @intCast(message.getOffset());
             if (librdkafka.rd_kafka_commit_message(self._consumer, message._message, offset) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
+                @branchHint(.unlikely);
                 std.log.err("failed to commit offset {s}", .{utils.getLastError()});
             }
             std.log.info("Offset {d} commited", .{offset});

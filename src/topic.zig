@@ -7,6 +7,7 @@ const librdkafka = @cImport({
 pub fn createTopic(producer: ?*librdkafka.rd_kafka_t, topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s, topic_name: [*]const u8) ?*librdkafka.struct_rd_kafka_topic_s {
     const kafka_topic: ?*librdkafka.struct_rd_kafka_topic_s = librdkafka.rd_kafka_topic_new(producer, topic_name, topic_conf);
     if (kafka_topic == null) {
+        @branchHint(.unlikely);
         @panic("Failed to create Kafka topic");
     }
     return kafka_topic;
@@ -24,6 +25,7 @@ pub const Builder = struct {
     pub fn getTopicConf() ?*librdkafka.struct_rd_kafka_topic_conf_s {
         const topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s = librdkafka.rd_kafka_topic_conf_new();
         if (topic_conf == null) {
+            @branchHint(.unlikely);
             @panic("Failed to create topic configuration");
         }
         return topic_conf;
@@ -32,6 +34,7 @@ pub const Builder = struct {
     fn setTopicConfigParam(self: Self, topic_param: [*c]const u8, topic_value: [*c]const u8) void {
         var error_message: [512]u8 = undefined;
         if (librdkafka.rd_kafka_topic_conf_set(self._topic_conf, topic_param, topic_value, &error_message, error_message.len) != librdkafka.RD_KAFKA_CONF_OK) {
+            @branchHint(.unlikely);
             @panic(&error_message);
         }
     }

@@ -18,6 +18,7 @@ pub const Producer = struct {
         var error_message: [512]u8 = undefined;
         const kafka_producer: ?*librdkafka.rd_kafka_t = librdkafka.rd_kafka_new(librdkafka.RD_KAFKA_PRODUCER, kafka_conf, &error_message, error_message.len);
         if (kafka_producer == null) {
+            @branchHint(.unlikely);
             @panic(&error_message);
         }
         std.log.info("kafka producer initialized", .{});
@@ -54,6 +55,7 @@ pub const Producer = struct {
         );
 
         if (err != 0) {
+            @branchHint(.unlikely);
             std.log.err("Failed to send message: {s}", .{utils.getLastError()});
         } else {
             std.log.info("Message sent successfully!", .{});
@@ -61,7 +63,7 @@ pub const Producer = struct {
     }
 
     // Wait for all messages to be sent.
-    pub fn wait(self: Self, comptime interval: u16) void {
+    pub inline fn wait(self: Self, comptime interval: u16) void {
         while (librdkafka.rd_kafka_outq_len(self._producer) > 0) {
             _ = librdkafka.rd_kafka_poll(self._producer, interval);
         }
