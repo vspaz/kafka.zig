@@ -33,6 +33,7 @@ pub const Producer = struct {
 
     pub fn deinit(self: Self) void {
         if (librdkafka.rd_kafka_flush(self._producer, 60_000) != 0) {
+            @branchHint(.unlikely);
             std.log.err("failed to flush messages", .{});
         }
         librdkafka.rd_kafka_topic_destroy(self._topic);

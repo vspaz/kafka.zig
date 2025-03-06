@@ -18,17 +18,18 @@ pub const Consumer = struct {
         var error_message: [512]u8 = undefined;
         const kafka_consumer: ?*librdkafka.rd_kafka_t = librdkafka.rd_kafka_new(librdkafka.RD_KAFKA_CONSUMER, kafka_conf, &error_message, error_message.len);
         if (kafka_consumer == null) {
+            @branchHint(.unlikely);
             @panic(&error_message);
         }
         std.log.info("kafka consumer initialized", .{});
         return kafka_consumer;
     }
 
-    pub fn init(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s) Self {
+    pub inline fn init(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s) Self {
         return Self{ ._consumer = createKafkaConsumer(kafka_conf) };
     }
 
-    pub fn deinit(self: Self) void {
+    pub inline fn deinit(self: Self) void {
         librdkafka.rd_kafka_topic_partition_list_destroy(self._topics);
         librdkafka.rd_kafka_destroy(self._consumer);
         std.log.info("kafka consumer deinitialized", .{});
@@ -37,12 +38,14 @@ pub const Consumer = struct {
     pub fn subscribe(self: *Self, topic_names: []const []const u8) void {
         self._topics = librdkafka.rd_kafka_topic_partition_list_new(@intCast(topic_names.len));
         if (self._topics == null) {
+            @branchHint(.unlikely);
             @panic("failed to create topic list");
         }
         for (topic_names) |topic_name| {
             _ = librdkafka.rd_kafka_topic_partition_list_add(self._topics, topic_name.ptr, librdkafka.RD_KAFKA_PARTITION_UA);
         }
         if (librdkafka.rd_kafka_subscribe(self._consumer, self._topics) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
+            @branchHint(.unlikely);
             std.log.err("failed to subscribe {s}", .{utils.getLastError()});
             @panic("failed to subscribe {s}");
         }
@@ -80,7 +83,7 @@ pub const Consumer = struct {
         }
     }
 
-    pub fn unsubscribe(self: Self) void {
+    pub inline fn unsubscribe(self: Self) void {
         if (librdkafka.rd_kafka_unsubscribe(self._consumer) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
             std.log.err("failed to commit offset {s}", .{utils.getLastError()});
             return;
@@ -88,8 +91,9 @@ pub const Consumer = struct {
         std.log.info("consumer unsubscribed successfully.", .{});
     }
 
-    pub fn close(self: Self) void {
+    pub inline fn close(self: Self) void {
         if (librdkafka.rd_kafka_consumer_close(self._consumer) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
+            @branchHint(.unlikely);
             std.log.err("Failed to close consumer: {s}", .{utils.getLastError()});
             return;
         }
