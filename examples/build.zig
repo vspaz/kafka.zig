@@ -35,8 +35,8 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    const kafkazig = b.dependency("kafka.zig", .{});
-    exe.root_module.addImport("kafka", kafkazig.module("kafka.zig"));
+    const kafkazig = b.dependency("kafka", .{});
+    exe.root_module.addImport("kafka", kafkazig.module("kafka"));
     exe.linkSystemLibrary("rdkafka");
 
     // This declares intent for the executable to be installed into the

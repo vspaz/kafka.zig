@@ -13,11 +13,11 @@ pub const ApiClient = struct {
     const Self = @This();
     _producer: ?*librdkafka.rd_kafka_t,
 
-    pub fn init(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s) Self {
+    pub inline fn init(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s) Self {
         return Self{ ._producer = producer.Producer.createKafkaProducer(kafka_conf) };
     }
 
-    pub fn deinit(self: Self) void {
+    pub inline fn deinit(self: Self) void {
         librdkafka.rd_kafka_destroy(self._producer);
         std.log.info("kafka producer deinitialized", .{});
     }
@@ -25,6 +25,7 @@ pub const ApiClient = struct {
     pub fn getMetadata(self: Self, allocator: std.mem.Allocator) !m.Metadata {
         var metadata: [*c]const librdkafka.struct_rd_kafka_metadata = undefined;
         if (librdkafka.rd_kafka_metadata(self._producer, 1, null, &metadata, 5000) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
+            @branchHint(.unlikely);
             std.log.err("Failed to fetch metadata: {s}", .{utils.getLastError()});
         }
         return m.Metadata.init(allocator, metadata);

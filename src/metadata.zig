@@ -116,7 +116,7 @@ pub const Metadata = struct {
         librdkafka.rd_kafka_metadata_destroy(self._metadata);
     }
 
-    pub fn listTopics(self: Self) []Topic {
+    pub inline fn listTopics(self: Self) []Topic {
         return self._topics;
     }
 
@@ -129,7 +129,7 @@ pub const Metadata = struct {
         return null;
     }
 
-    pub fn listBrokers(self: Self) []Broker {
+    pub inline fn listBrokers(self: Self) []Broker {
         return self._brokers;
     }
 

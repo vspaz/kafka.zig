@@ -1,6 +1,8 @@
 .{
-    .name = "kafka",
-    .version = "0.6.0",
+    .name = .kafka,
+    .minimum_zig_version = "0.14.0",
+    .fingerprint = 0x5bbc751716ddce07,
+    .version = "0.7.0",
     .dependencies = .{},
     .paths = .{
         "build.zig",
