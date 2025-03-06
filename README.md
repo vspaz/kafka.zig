@@ -27,9 +27,9 @@ zig fetch --save git+https://github.com/vspaz/kafka.zig.git#main
 it should add the following dependency to your project _build.zig.zon_ file, e.g.
 ```zig
 .dependencies = .{
-    .@"kafka.zig" = .{
-        .url = "git+https://github.com/vspaz/kafka.zig.git?ref=main#c3d2d726ebce1daea58c12e077a90e7afdc60f88",
-        .hash = "1220367e8cb4867b60e2bfa3e2f3663bc0669a4b6899650abcc82fc9b8763fd64050",
+    .kafka = .{
+        .url = "git+https://github.com/vspaz/kafka.zig.git?ref=upgrade-to-zig-014#cb45eb6daea091732b51b5e4bbf75ce4ec18c2e7",
+        .hash = "kafka-0.7.0-B87dFgemAADy9tRkT-STJv1jMqfOjhIydW4PiIRwCfdp",
     },
 },
 ```
@@ -43,8 +43,8 @@ it should add the following dependency to your project _build.zig.zon_ file, e.g
     });
     
     // add these 3 lines!
-    const kafkazig = b.dependency("kafka.zig", .{});
-    exe.root_module.addImport("kafka", kafkazig.module("kafka.zig"));
+     const kafkazig = b.dependency("kafka", .{});
+    exe.root_module.addImport("kafka", kafkazig.module("kafka"));
     exe.linkSystemLibrary("rdkafka");
 ```
 4. Test the project build with `zig build`

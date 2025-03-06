@@ -24,13 +24,9 @@
     // Once all dependencies are fetched, `zig build` no longer requires
     // internet connectivity.
     .dependencies = .{
-        .@"kafka.zig" = .{
-            .url = "git+https://github.com/vspaz/kafka.zig.git?ref=main#349cb1e2ad7638b40d189f9d5e1e8e240efa470d",
-            .hash = "1220bfea95815e5fd0e9336c5d0487863f9f9102e9a5eae13429cdcf57f1b25021ff",
-        },
         .kafka = .{
-            .url = "git+https://github.com/vspaz/kafka.zig.git?ref=main#86ae90a377c5c8f4bedf22b511e48d3c07b012e4",
-            .hash = "12204025ee179ca9a6b652f349840899c4350ca84281492bf09db4c8be826a192bcb",
+            .url = "git+https://github.com/vspaz/kafka.zig.git?ref=upgrade-to-zig-014#cb45eb6daea091732b51b5e4bbf75ce4ec18c2e7",
+            .hash = "kafka-0.7.0-B87dFgemAADy9tRkT-STJv1jMqfOjhIydW4PiIRwCfdp",
         },
     },
     .paths = .{
