@@ -12,7 +12,7 @@ pub const Consumer = struct {
     const Self = @This();
     _consumer: ?*librdkafka.rd_kafka_t,
     _topics: ?*librdkafka.struct_rd_kafka_topic_partition_list_s = undefined,
-    _message_count: u32 = 0,
+    _message_count: std.atomic.Value(u32) = std.atomic.Value(u32).init(0),
 
     fn createKafkaConsumer(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s) ?*librdkafka.rd_kafka_t {
         var error_message: [512]u8 = undefined;
@@ -53,8 +53,37 @@ pub const Consumer = struct {
         std.log.info("kafka consumer subscribed", .{});
     }
 
+    pub fn consume_start(self: Self, topic: ?*librdkafka.struct_rd_kafka_topic_s, partition: i32, offset: i64) void {
+        if (librdkafka.rd_kafka_consume_start(topic, partition, offset) == -1) {
+            @branchHint(.unlikely);
+            std.log.err("failed to start consumer {s}", .{utils.getLastError()});
+            librdkafka.rd_kafka_topic_destroy(topic);
+            librdkafka.rd_kafka_destroy(self._consumer);
+            @panic("failed to start consumer {s}");
+        }
+    }
+
+    pub inline fn consume_stop(topic: ?*librdkafka.struct_rd_kafka_topic_s, partition: i32) void {
+        if (librdkafka.rd_kafka_consume_stop(topic, partition) == -1) {
+            @branchHint(.unlikely);
+            std.log.err("failed to stop consumer {s}", .{utils.getLastError()});
+        } else {
+            std.log.info("kafka consumer stopped", .{});
+        }
+        librdkafka.rd_kafka_topic_destroy(topic);
+    }
+
+    pub inline fn consume(self: Self, topic: ?*librdkafka.struct_rd_kafka_topic_s, partition: i32, comptime timeout: c_int) ?Message {
+        _ = self._message_count.fetchAdd(1, std.builtin.AtomicOrder.seq_cst);
+        const message_or_null = librdkafka.rd_kafka_consume(topic, partition, timeout);
+        if (message_or_null) |message| {
+            return .{ ._message = message };
+        }
+        return null;
+    }
+
     pub fn poll(self: *Self, comptime timeout: c_int) ?Message {
-        self._message_count += 1;
+        _ = self._message_count.fetchAdd(1, std.builtin.AtomicOrder.seq_cst);
         const message_or_null = librdkafka.rd_kafka_consumer_poll(self._consumer, timeout);
         if (message_or_null) |message| {
             return .{ ._message = message };
@@ -73,7 +102,7 @@ pub const Consumer = struct {
     }
 
     pub fn commitOffsetOnEvery(self: Self, comptime count: u32, message: Message) void {
-        if (self._message_count % count == 0) {
+        if (self._message_count.load(std.builtin.AtomicOrder.seq_cst) % count == 0) {
             const offset: c_int = @intCast(message.getOffset());
             if (librdkafka.rd_kafka_commit_message(self._consumer, message._message, offset) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
                 @branchHint(.unlikely);

@@ -17,6 +17,7 @@ style-fix:
 .PHONY: clean
 clean:
 	rm -rf zig-out
+	rm -rf .zig-cache
 
 kafka-start:
 	docker compose up
