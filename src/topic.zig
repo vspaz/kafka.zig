@@ -4,8 +4,8 @@ const librdkafka = @cImport({
     @cInclude("librdkafka/rdkafka.h");
 });
 
-pub fn createTopic(producer: ?*librdkafka.rd_kafka_t, topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s, topic_name: [*]const u8) ?*librdkafka.struct_rd_kafka_topic_s {
-    const kafka_topic: ?*librdkafka.struct_rd_kafka_topic_s = librdkafka.rd_kafka_topic_new(producer, topic_name, topic_conf);
+pub fn createTopic(client: ?*librdkafka.rd_kafka_t, topic_conf: ?*librdkafka.struct_rd_kafka_topic_conf_s, topic_name: [*]const u8) ?*librdkafka.struct_rd_kafka_topic_s {
+    const kafka_topic: ?*librdkafka.struct_rd_kafka_topic_s = librdkafka.rd_kafka_topic_new(client, topic_name, topic_conf);
     if (kafka_topic == null) {
         @branchHint(.unlikely);
         @panic("Failed to create Kafka topic");
