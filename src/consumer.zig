@@ -12,7 +12,7 @@ pub const Consumer = struct {
     const Self = @This();
     _consumer: ?*librdkafka.rd_kafka_t,
     _topics: ?*librdkafka.struct_rd_kafka_topic_partition_list_s = undefined,
-    _message_count: std.atomic.Value(i64) = std.atomic.Value(i64).init(0),
+    _message_count: std.atomic.Value(u32) = std.atomic.Value(u32).init(0),
 
     fn createKafkaConsumer(kafka_conf: ?*librdkafka.struct_rd_kafka_conf_s) ?*librdkafka.rd_kafka_t {
         var error_message: [512]u8 = undefined;

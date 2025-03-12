@@ -25,8 +25,8 @@
     // internet connectivity.
     .dependencies = .{
         .kafka = .{
-            .url = "git+https://github.com/vspaz/kafka.zig.git?ref=add-consume-start-and-consume-end#0818575a778c884897f67cd885e6a18c12848a50",
-            .hash = "kafka-0.7.0-B87dFqerAAD7zlonjkeuYt56_hu40hGpcHB5G1Ic76bT",
+            .url = "git+https://github.com/vspaz/kafka.zig.git?ref=add-consume-start-and-consume-end#6767710ddcebe9c4f3e48546d22a50e7e9736cc4",
+            .hash = "kafka-0.7.0-B87dFq-rAAAtthGw51WzPGefaQ2DAE2rKyk9Mob-2BSz",
         },
     },
     .paths = .{
