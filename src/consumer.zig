@@ -102,7 +102,7 @@ pub const Consumer = struct {
     }
 
     pub fn commitOffsetOnEvery(self: Self, comptime count: u32, message: Message) void {
-        if (self._message_count.load(std.atomic.Order.SeqCst) % count == 0) {
+        if (self._message_count.load(std.builtin.AtomicOrder.seq_cst) % count == 0) {
             const offset: c_int = @intCast(message.getOffset());
             if (librdkafka.rd_kafka_commit_message(self._consumer, message._message, offset) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
                 @branchHint(.unlikely);
