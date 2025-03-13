@@ -3,7 +3,12 @@
     .minimum_zig_version = "0.14.0",
     .fingerprint = 0x5bbc751716ddce07,
     .version = "0.7.0",
-    .dependencies = .{},
+    .dependencies = .{
+        .kafka = .{
+            .url = "git+https://github.com/vspaz/kafka.zig.git?ref=main#3ad2f7e6d3561db2cfa6b98d0b69d8bc0d039119",
+            .hash = "kafka-0.7.0-B87dFq-rAACUecI_BvbbyWbQ2fo6DRDYZGsM_TQ8Ky_e",
+        },
+    },
     .paths = .{
         "build.zig",
         "build.zig.zon",
