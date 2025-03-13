@@ -179,7 +179,11 @@ pub fn main() !void {
 }
 ```
 ### Callbacks
-If you wish to set a producer callback, you can do it with `kafka.setCb` or `kafka.setErrCb` as follows:
+If you wish to set a callback, you can do it with
+- `kafka.setCb`, 
+- `kafka.setErrCb`, 
+- `kafka.setConsumeCb`, 
+- etc. as follows:
 ```zig
 const kafka = @import("kafka");
 
