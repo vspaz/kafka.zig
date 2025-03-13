@@ -4,7 +4,6 @@ const librdkafka = @cImport({
 
 const Message = @import("message.zig").Message;
 
-// consumers
 pub fn setConsumeCb(conf: ?*librdkafka.struct_rd_kafka_conf_s, comptime cb: fn (message: Message) void) void {
     const cbAdapter = struct {
         fn callback(_: ?*librdkafka.rd_kafka_t, rkmessage: [*c]const librdkafka.rd_kafka_message_t, _: ?*anyopaque) callconv(.C) void {
@@ -15,7 +14,6 @@ pub fn setConsumeCb(conf: ?*librdkafka.struct_rd_kafka_conf_s, comptime cb: fn (
     librdkafka.rd_kafka_conf_set_consume_cb(conf, cbAdapter.callback);
 }
 
-// producers
 pub fn setCb(conf: ?*librdkafka.struct_rd_kafka_conf_s, comptime cb: fn (message: Message) void) void {
     const cbAdapter = struct {
         fn callback(_: ?*librdkafka.rd_kafka_t, rkmessage: [*c]const librdkafka.rd_kafka_message_t, _: ?*anyopaque) callconv(.C) void {
