@@ -82,6 +82,10 @@ fn jsonProducer() !void {
     }
 }
 
+fn onMessageConsumed(message: kafka.Message) void {
+    std.log.info("Message consumed: {s}", .{message.getPayload()});
+}
+
 fn jsonConsumer() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
@@ -96,6 +100,7 @@ fn jsonConsumer() !void {
         .with("reconnect.backoff.ms", "100")
         .with("reconnect.backoff.max.ms", "1000")
         .build();
+    kafka.setConsumeCb(consumer_conf, onMessageConsumed);
     var kafka_consumer = kafka.Consumer.init(consumer_conf);
     defer kafka_consumer.deinit();
 
