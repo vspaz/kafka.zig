@@ -208,8 +208,8 @@ fn onError(err: i32, reason: [*c]const u8) void {
 fn producer() void {
     var producer_config_builder = kafka.ConfigBuilder.get();
     const producer_conf = producer_config_builder
-    .with("bootstrap.servers", "localhost:9092")
-    .build();
+        .with("bootstrap.servers", "localhost:9092")
+        .build();
     
     kafka.setErrCb(producer_conf, onError);
 }
