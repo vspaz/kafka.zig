@@ -179,17 +179,27 @@ pub fn main() !void {
 }
 ```
 ### Callbacks
-If you wish to set a callback, you can do it with
+If you wish to set a callback, you can do it as follows:
 - `kafka.setCb`, 
-- `kafka.setErrCb`, 
-- `kafka.setConsumeCb`, 
-- etc. as follows:
 ```zig
 const kafka = @import("kafka");
 
 fn onMessageSent(message: kafka.Message) void {
     std.log.info("Message sent: {s}", .{message.getPayload()});
 }
+
+fn producer() void {
+    var producer_config_builder = kafka.ConfigBuilder.get();
+    const producer_conf = producer_config_builder
+        .with("bootstrap.servers", "localhost:9092")
+        .build();
+    
+    kafka.setCb(producer_conf, onMessageSent);
+}
+```
+- `kafka.setErrCb`, 
+```zig
+const kafka = @import("kafka");
 
 fn onError(err: i32, reason: [*c]const u8) void {
     std.log.err("error code: {d}; error message: {s}.", .{err, reason});
@@ -201,12 +211,14 @@ fn producer() void {
         .with("bootstrap.servers", "localhost:9092")
         .build();
     
-    kafka.setCb(producer_conf, onMessageSent);
     kafka.setErrCb(producer_conf, onError);
 }
 ```
+
+- `kafka.setConsumeCb`, 
+
 > [!NOTE] 
-> The callback is a part of producer configuration and should be set before producer is initialized!
+> The callback is a part of producer/consumer configuration and should be set before producer is initialized!
 ## Consumers
 An example of a **Zig Kafka** consumer, consuming JSON or binary data.
 ```zig
