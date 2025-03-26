@@ -70,6 +70,15 @@ pub const Producer = struct {
             _ = librdkafka.rd_kafka_poll(self._producer, interval);
         }
     }
+
+    pub inline fn init_transactions(self: Self, comptime interval: u32) void {
+        if (librdkafka.rd_kafka_init_transactions(self._producer, interval) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
+            @branchHint(.unlikely);
+            std.log.err("Failed to initialize transactions: {s}", .{utils.getLastError()});
+            @panic("Failed to initialize transactions");
+        }
+        std.log.info("Transactions initialized successfully", .{});
+    }
 };
 
 // TODO: mock it

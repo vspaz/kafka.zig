@@ -2,7 +2,7 @@
     .name = .kafka,
     .minimum_zig_version = "0.14.0",
     .fingerprint = 0x5bbc751716ddce07,
-    .version = "0.7.0",
+    .version = "0.7.1",
     .dependencies = .{
         .kafka = .{
             .url = "git+https://github.com/vspaz/kafka.zig.git?ref=update-callback-docs#b37a4992e920167c5bf185c6b326a02bd4a47242",
