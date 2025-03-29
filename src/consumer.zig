@@ -73,18 +73,18 @@ pub const Consumer = struct {
         librdkafka.rd_kafka_topic_destroy(topic);
     }
 
-    pub inline fn consume(self: Self, topic: ?*librdkafka.struct_rd_kafka_topic_s, partition: i32, comptime timeout: c_int) ?Message {
+    pub inline fn consume(self: Self, topic: ?*librdkafka.struct_rd_kafka_topic_s, partition: i32, comptime timeout_ms: u16) ?Message {
         _ = self._message_count.fetchAdd(1, std.builtin.AtomicOrder.seq_cst);
-        const message_or_null = librdkafka.rd_kafka_consume(topic, partition, timeout);
+        const message_or_null = librdkafka.rd_kafka_consume(topic, partition, timeout_ms);
         if (message_or_null) |message| {
             return .{ ._message = message };
         }
         return null;
     }
 
-    pub fn poll(self: *Self, comptime timeout: c_int) ?Message {
+    pub fn poll(self: *Self, comptime timeout_ms: u16) ?Message {
         _ = self._message_count.fetchAdd(1, std.builtin.AtomicOrder.seq_cst);
-        const message_or_null = librdkafka.rd_kafka_consumer_poll(self._consumer, timeout);
+        const message_or_null = librdkafka.rd_kafka_consumer_poll(self._consumer, timeout_ms);
         if (message_or_null) |message| {
             return .{ ._message = message };
         }

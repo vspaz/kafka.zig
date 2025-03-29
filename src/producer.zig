@@ -65,20 +65,22 @@ pub const Producer = struct {
     }
 
     // Wait for all messages to be sent.
-    pub inline fn wait(self: Self, comptime interval: u16) void {
+    pub inline fn wait(self: Self, comptime timeout_ms: u16) void {
         while (librdkafka.rd_kafka_outq_len(self._producer) > 0) {
-            _ = librdkafka.rd_kafka_poll(self._producer, interval);
+            _ = librdkafka.rd_kafka_poll(self._producer, timeout_ms);
         }
     }
 
-    pub inline fn init_transactions(self: Self, comptime interval: u32) void {
-        if (librdkafka.rd_kafka_init_transactions(self._producer, interval) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
+    pub inline fn init_transactions(self: Self, comptime timeout_ms: u16) void {
+        if (librdkafka.rd_kafka_init_transactions(self._producer, timeout_ms) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
             @branchHint(.unlikely);
             std.log.err("Failed to initialize transactions: {s}", .{utils.getLastError()});
             @panic("Failed to initialize transactions");
         }
         std.log.info("Transactions initialized successfully", .{});
     }
+
+
 };
 
 // TODO: mock it
