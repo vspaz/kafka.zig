@@ -92,6 +92,17 @@ pub const Producer = struct {
         std.log.err("Failed to begin transaction: {s}", .{utils.err2Str(err_code)});
         return err_code;
     }
+
+    pub inline fn commit_transaction(self: Self) i32 {
+        const err: ?*librdkafka.rd_kafka_error_t = librdkafka.rd_kafka_commit_transaction(self._producer);
+        const err_code = utils.err2code(err);
+        if (err_code == 0) {
+            std.log.info("Transaction comitted successfully!", .{});
+            return 0;
+        }
+        std.log.err("Failed to commit transaction: {s}", .{utils.err2Str(err_code)});
+        return err_code;
+    }
 };
 
 // TODO: mock it
