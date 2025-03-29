@@ -103,6 +103,17 @@ pub const Producer = struct {
         std.log.err("Failed to commit transaction: {s}", .{utils.err2Str(err_code)});
         return err_code;
     }
+
+    pub inline fn abort_transaction(self: Self, timeout_ms: u16) i32 {
+        const err: ?*librdkafka.rd_kafka_error_t = librdkafka.rd_kafka_abort_transaction(self._producer, timeout_ms);
+        const err_code = utils.err2code(err);
+        if (err_code == 0) {
+            std.log.info("Transaction aborted successfully!", .{});
+            return 0;
+        }
+        std.log.err("Failed to abord transaction: {s}", utils.err2Str(err_code));
+        return err_code;
+    }
 };
 
 // TODO: mock it
@@ -142,7 +153,7 @@ test "test get Producer Ok" {
         .build();
 
     const kafka_producer = Producer.init(conf, topic_conf, "foobar-topic");
-    std.debug.assert(@TypeOf(kafka_producer.init_transactions(1000 * 6)) == i32);
+    std.debug.assert(@TypeOf(kafka_producer.init_transactions(6_000)) == i32);
     std.debug.assert(@TypeOf(kafka_producer) == Producer);
     kafka_producer.deinit();
 }
