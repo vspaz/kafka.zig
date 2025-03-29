@@ -55,7 +55,7 @@ pub const Consumer = struct {
     }
 
     pub fn consume_start(self: Self, topic: ?*librdkafka.struct_rd_kafka_topic_s, partition: i32, offset: i64) void {
-        if (librdkafka.rd_kafka_consume_start(topic, partition, offset) == -1) {
+        if (librdkafka.rd_kafka_consume_start(topic, partition, offset) == librdkafka.RD_KAFKA_RESP_ERR_UNKNOWN) {
             @branchHint(.unlikely);
             std.log.err("failed to start consumer {s}", .{errors.getLastError()});
             librdkafka.rd_kafka_topic_destroy(topic);
@@ -65,7 +65,7 @@ pub const Consumer = struct {
     }
 
     pub inline fn consume_stop(topic: ?*librdkafka.struct_rd_kafka_topic_s, partition: i32) void {
-        if (librdkafka.rd_kafka_consume_stop(topic, partition) == -1) {
+        if (librdkafka.rd_kafka_consume_stop(topic, partition) == librdkafka.RD_KAFKA_RESP_ERR_UNKNOWN) {
             @branchHint(.unlikely);
             std.log.err("failed to stop consumer {s}", .{errors.getLastError()});
         } else {
