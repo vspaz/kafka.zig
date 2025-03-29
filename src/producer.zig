@@ -71,16 +71,27 @@ pub const Producer = struct {
         }
     }
 
-    pub inline fn init_transactions(self: Self, comptime timeout_ms: u16) void {
-        if (librdkafka.rd_kafka_init_transactions(self._producer, timeout_ms) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
-            @branchHint(.unlikely);
-            std.log.err("Failed to initialize transactions: {s}", .{utils.getLastError()});
-            @panic("Failed to initialize transactions");
+    pub inline fn init_transactions(self: Self, comptime timeout_ms: u16) i32 {
+        const err: ?*librdkafka.rd_kafka_error_t = librdkafka.rd_kafka_init_transactions(self._producer, timeout_ms);
+        const err_code = utils.err2code(err);
+        if (err_code == 0) {
+            std.log.info("Transactions initialized successfully!", .{});
+            return 0;
         }
-        std.log.info("Transactions initialized successfully", .{});
+        std.log.err("Failed to initialize transactions: {s}", .{utils.err2Str(err_code)});
+        return err_code;
     }
 
-
+    pub inline fn begin_transaction(self: Self) i32 {
+        const err: ?*librdkafka.rd_kafka_error_t = librdkafka.rd_kafka_begin_transaction(self._producer);
+        const err_code = utils.err2code(err);
+        if (err_code == 0) {
+            std.log.info("Transaction started successfully!", .{});
+            return 0;
+        }
+        std.log.err("Failed to begin transaction: {s}", .{utils.err2Str(err_code)});
+        return err_code;
+    }
 };
 
 // TODO: mock it
@@ -120,6 +131,7 @@ test "test get Producer Ok" {
         .build();
 
     const kafka_producer = Producer.init(conf, topic_conf, "foobar-topic");
+    std.debug.assert(@TypeOf(kafka_producer.init_transactions(1000 * 6)) == i32);
     std.debug.assert(@TypeOf(kafka_producer) == Producer);
     kafka_producer.deinit();
 }
