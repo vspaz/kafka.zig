@@ -17,3 +17,7 @@ pub inline fn err2Str(err_code: c_int) [*c]const u8 {
 pub inline fn err2code(err: ?*librdkafka.rd_kafka_error_t) i32 {
     return librdkafka.rd_kafka_error_code(err);
 }
+
+pub inline fn deinitErr(err: ?*librdkafka.rd_kafka_error_t) void {
+    librdkafka.rd_kafka_error_destroy(err);
+}
