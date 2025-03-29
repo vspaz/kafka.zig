@@ -6,7 +6,7 @@ const librdkafka = @cImport({
 
 const config = @import("config.zig");
 const m = @import("metadata.zig");
-const utils = @import("utils.zig");
+const errors = @import("errors.zig");
 const producer = @import("producer.zig");
 
 pub const ApiClient = struct {
@@ -26,7 +26,7 @@ pub const ApiClient = struct {
         var metadata: [*c]const librdkafka.struct_rd_kafka_metadata = undefined;
         if (librdkafka.rd_kafka_metadata(self._producer, 1, null, &metadata, 5000) != librdkafka.RD_KAFKA_RESP_ERR_NO_ERROR) {
             @branchHint(.unlikely);
-            std.log.err("Failed to fetch metadata: {s}", .{utils.getLastError()});
+            std.log.err("Failed to fetch metadata: {s}", .{errors.getLastError()});
         }
         return m.Metadata.init(allocator, metadata);
     }
