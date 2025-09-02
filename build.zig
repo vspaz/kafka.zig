@@ -4,11 +4,15 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{ .preferred_optimize_mode = .ReleaseFast });
 
-    const lib = b.addStaticLibrary(.{
+    const lib = b.addLibrary(.{
         .name = "kafka",
-        .root_source_file = b.path("src/kafka.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/kafka.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .strip = true,
+        }),
     });
 
     b.installArtifact(lib);
@@ -20,10 +24,13 @@ pub fn build(b: *std.Build) void {
 
     const exe = b.addExecutable(.{
         .name = "kafka",
-        .root_source_file = b.path("src/kafka.zig"),
-        .target = target,
-        .optimize = optimize,
-        .link_libc = true,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/kafka.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .strip = true,
+        }),
     });
     exe.root_module.addImport("kafka", kafkazig);
     exe.linkSystemLibrary("rdkafka");
@@ -56,20 +63,12 @@ pub fn build(b: *std.Build) void {
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
 
-    // Creates a step for unit testing. This only builds the test executable
-    // but does not run it.
-    // const lib_unit_tests = b.addTest(.{
-    //     .root_source_file = b.path("src/root.zig"),
-    //     .target = target,
-    //     .optimize = optimize,
-    // });
-    //
-    // const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
-
     const exe_unit_tests = b.addTest(.{
-        .root_source_file = b.path("src/kafka.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/kafka.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
 
     _ = b.addRunArtifact(exe_unit_tests);
