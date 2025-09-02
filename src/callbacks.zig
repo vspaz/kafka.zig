@@ -4,7 +4,7 @@ const Message = @import("message.zig").Message;
 
 pub fn setConsumeCb(conf: ?*librdkafka.struct_rd_kafka_conf_s, comptime cb: fn (message: Message) void) void {
     const cbAdapter = struct {
-        fn callback(rkmessage: [*c]const librdkafka.rd_kafka_message_t, _: ?*anyopaque) callconv(.C_Decl) void {
+        fn callback(rkmessage: [*c]const librdkafka.rd_kafka_message_t, _: ?*anyopaque) void {
             var message = rkmessage.*;
             cb(.{ ._message = &message });
         }
@@ -14,7 +14,7 @@ pub fn setConsumeCb(conf: ?*librdkafka.struct_rd_kafka_conf_s, comptime cb: fn (
 
 pub fn setCb(conf: ?*librdkafka.struct_rd_kafka_conf_s, comptime cb: fn (message: Message) void) void {
     const cbAdapter = struct {
-        fn callback(_: ?*librdkafka.rd_kafka_t, rkmessage: [*c]const librdkafka.rd_kafka_message_t, _: ?*anyopaque) callconv(.C_Decl) void {
+        fn callback(_: ?*librdkafka.rd_kafka_t, rkmessage: [*c]const librdkafka.rd_kafka_message_t, _: ?*anyopaque) void {
             var message = rkmessage.*;
             cb(.{ ._message = &message });
         }
@@ -24,7 +24,7 @@ pub fn setCb(conf: ?*librdkafka.struct_rd_kafka_conf_s, comptime cb: fn (message
 
 pub fn setErrCb(conf: ?*librdkafka.struct_rd_kafka_conf_s, comptime cb: fn (err: i32, reason: [*c]const u8) void) void {
     const errCbAdapter = struct {
-        fn callback(_: ?*librdkafka.rd_kafka_t, err: c_int, reason: [*c]const u8, _: ?*anyopaque) callconv(.C_Decl) void {
+        fn callback(_: ?*librdkafka.rd_kafka_t, err: c_int, reason: [*c]const u8, _: ?*anyopaque) void {
             cb(err, reason);
         }
     };

@@ -2,7 +2,7 @@
     .name = .kafka,
     .minimum_zig_version = "0.15.1",
     .fingerprint = 0x5bbc751716ddce07,
-    .version = "0.8.3",
+    .version = "0.8.4",
     .paths = .{
         "build.zig",
         "build.zig.zon",
