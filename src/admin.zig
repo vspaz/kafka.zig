@@ -1,8 +1,6 @@
 const std = @import("std");
 
-const librdkafka = @cImport({
-    @cInclude("librdkafka/rdkafka.h");
-});
+const librdkafka = @import("cimport.zig").librdkafka;
 
 const config = @import("config.zig");
 const m = @import("metadata.zig");

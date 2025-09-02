@@ -1,8 +1,6 @@
 const std = @import("std");
 
-const librdkafka = @cImport({
-    @cInclude("librdkafka/rdkafka.h");
-});
+const librdkafka = @import("cimport.zig").librdkafka;
 
 // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md#global-configuration-properties
 pub const Builder = struct {

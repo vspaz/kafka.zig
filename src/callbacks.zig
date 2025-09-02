@@ -1,6 +1,4 @@
-const librdkafka = @cImport({
-    @cInclude("librdkafka/rdkafka.h");
-});
+const librdkafka = @import("cimport.zig").librdkafka;
 
 const Message = @import("message.zig").Message;
 

@@ -1,8 +1,6 @@
 const std = @import("std");
 
-const librdkafka = @cImport({
-    @cInclude("librdkafka/rdkafka.h");
-});
+const librdkafka = @import("cimport.zig").librdkafka;
 
 // https://docs.confluent.io/platform/current/clients/librdkafka/html/classRdKafka_1_1Message.html
 pub const Message = struct {
