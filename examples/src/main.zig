@@ -61,8 +61,8 @@ fn jsonProducer() !void {
     const topic_conf = topic_config_builder
         .with("acks", "all")
         .build();
-    kafka.setCb(producer_conf, onMessageSent);
-    kafka.setErrCb(producer_conf, onError);
+    try kafka.setCb(producer_conf, onMessageSent);
+    try kafka.setErrCb(producer_conf, onError);
 
     const kafka_producer = kafka.Producer.init(producer_conf, topic_conf, "topic-name2");
     defer kafka_producer.deinit();
@@ -73,12 +73,18 @@ fn jsonProducer() !void {
 
     for (0..100) |_| {
         const message = .{ .key1 = 100, .key2 = "kafka" };
-        const encoded_message = try std.json.stringifyAlloc(allocator, message, .{});
+
+        const fmt = std.json.fmt(message, .{ .whitespace = .indent_2 });
+
+        var writer = std.Io.Writer.Allocating.init(allocator);
+        try fmt.format(&writer.writer);
+
+        const encoded_message = try writer.toOwnedSlice();
         defer allocator.free(encoded_message);
 
         kafka_producer.send(encoded_message, "key");
         kafka_producer.wait(100);
-        std.time.sleep(1_000_000_000);
+        std.Thread.sleep(1_000_000_000);
     }
 }
 

@@ -1,14 +1,8 @@
 .{
     .name = .kafka,
-    .minimum_zig_version = "0.14.0",
+    .minimum_zig_version = "0.15.1",
     .fingerprint = 0x5bbc751716ddce07,
-    .version = "0.7.1",
-    .dependencies = .{
-        .kafka = .{
-            .url = "git+https://github.com/vspaz/kafka.zig.git?ref=update-callback-docs#b37a4992e920167c5bf185c6b326a02bd4a47242",
-            .hash = "kafka-0.7.0-B87dFkOvAABBz8-tC-2w780JMQkbx2iSWpt6LvyrCuZS",
-        },
-    },
+    .version = "0.8.6",
     .paths = .{
         "build.zig",
         "build.zig.zon",

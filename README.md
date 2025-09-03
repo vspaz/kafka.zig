@@ -194,7 +194,7 @@ fn producer() void {
         .with("bootstrap.servers", "localhost:9092")
         .build();
     
-    kafka.setCb(producer_conf, onMessageSent);
+    try kafka.setCb(producer_conf, onMessageSent);
 }
 ```
 - `kafka.setErrCb`, 
@@ -211,7 +211,7 @@ fn producer() void {
         .with("bootstrap.servers", "localhost:9092")
         .build();
     
-    kafka.setErrCb(producer_conf, onError);
+    try kafka.setErrCb(producer_conf, onError);
 }
 ```
 
