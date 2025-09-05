@@ -253,6 +253,7 @@ fn jsonConsumer() !void {
     while (true) {
         const message_or_null: ?kafka.Message = kafka_consumer.poll(1000);
         if (message_or_null) |message| {
+            defer message.deinit();
             std.log.info("offset: {d}", .{message.getOffset()});
             std.log.info("partition: {d}", .{message.getPartition()});
             std.log.info("message length: {d}", .{message.getPayloadLen()});

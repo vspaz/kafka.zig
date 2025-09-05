@@ -76,7 +76,7 @@ pub const Consumer = struct {
         _ = self._message_count.fetchAdd(1, std.builtin.AtomicOrder.seq_cst);
         const message_or_null = librdkafka.rd_kafka_consume(topic, partition, timeout_ms);
         if (message_or_null) |message| {
-            return .{ ._message = message };
+            return Message.init(message);
         }
         return null;
     }
@@ -85,7 +85,7 @@ pub const Consumer = struct {
         _ = self._message_count.fetchAdd(1, std.builtin.AtomicOrder.seq_cst);
         const message_or_null = librdkafka.rd_kafka_consumer_poll(self._consumer, timeout_ms);
         if (message_or_null) |message| {
-            return .{ ._message = message };
+            return Message.init(message);
         }
         return null;
     }

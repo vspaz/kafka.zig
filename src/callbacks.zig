@@ -20,7 +20,7 @@ const cbCtx = struct {
     cb: *const fn (message: Message) void,
 };
 
-pub fn cbAdapter(_: ?*librdkafka.rd_kafka_t, rkmessage: [*c]const librdkafka.rd_kafka_message_t, opaq: ?*anyopaque) callconv(.c) void {
+fn cbAdapter(_: ?*librdkafka.rd_kafka_t, rkmessage: [*c]const librdkafka.rd_kafka_message_t, opaq: ?*anyopaque) callconv(.c) void {
     if (opaq) |ptr| {
         const ctx: *cbCtx = @ptrCast(@alignCast(ptr));
         var message = rkmessage.*;
@@ -45,7 +45,7 @@ const errCbCtx = struct {
     cb: *const fn (err: i32, reason: [*c]const u8) void,
 };
 
-pub fn errCbAdapter(_: ?*librdkafka.rd_kafka_t, err: c_int, reason: [*c]const u8, opaq: ?*anyopaque) callconv(.c) void {
+fn errCbAdapter(_: ?*librdkafka.rd_kafka_t, err: c_int, reason: [*c]const u8, opaq: ?*anyopaque) callconv(.c) void {
     if (opaq) |ptr| {
         const ctx: *errCbCtx = @ptrCast(@alignCast(ptr));
         ctx.cb(err, reason);
