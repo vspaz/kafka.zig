@@ -7,6 +7,14 @@ pub const Message = struct {
     const Self = @This();
     _message: *librdkafka.rd_kafka_message_t,
 
+    pub inline fn init(message: *librdkafka.rd_kafka_message_t) Self {
+        return .{ ._message = message };
+    }
+
+    pub inline fn deinit(self: Self) void {
+        librdkafka.rd_kafka_message_destroy(self._message);
+    }
+
     pub fn getPayload(self: Self) []const u8 {
         if (self._message.payload) |payload| {
             const payload_len = self.getPayloadLen();
