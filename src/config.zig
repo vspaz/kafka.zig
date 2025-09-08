@@ -15,7 +15,7 @@ pub const Builder = struct {
         const producer_conf: ?*librdkafka.struct_rd_kafka_conf_s = librdkafka.rd_kafka_conf_new();
         if (producer_conf == null) {
             @branchHint(.unlikely);
-            std.log.err("failed to create kafka config");
+            std.log.err("failed to create kafka config", .{});
         }
         return producer_conf;
     }
